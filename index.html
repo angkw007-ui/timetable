@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>수업시간표 v3.0.1.1</title>
+  <title>수업시간표 v3.0.1.2</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -67,7 +67,7 @@
       position: absolute !important;
       top: 50% !important;
       left: 50% !important;
-      transform: translate(-50%, -50%) scale(2.4) !important;
+      transform: translate(-50%, -50%) scale(2.0) !important;
       transform-origin: center center !important;
       width: 100% !important;
       height: 100% !important;
@@ -519,7 +519,7 @@
                class="shrink-0 border-b bg-gray-50 px-4 py-3">
         <!-- 크레딧 -->
         <div class="text-xs text-gray-500 mb-2 text-right">
-          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0.1.1"
+          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0.1.2"
         </div>
         
         <div class="flex flex-wrap items-center gap-3">
@@ -1264,7 +1264,7 @@
           "   ✅ 450 x 1260\n" +
           "   ✅ 900 x 2520\n" +
           "   💡 유튜브 숏츠(9:16)가 가장 적합합니다!\n" +
-          "   🔊 숏츠는 소리가 재생됩니다 (240% 크기)\n" +
+          "   🔊 숏츠는 소리가 재생됩니다 (200% 크기, 위아래 여백 살짝 표시)\n" +
           "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
           "지원 형식:\n" +
           "   • 유튜브: youtube.com/watch?v=xxxxx\n" +
@@ -1305,7 +1305,7 @@
           if (ytResult) { 
             slide.type = ytResult.isShorts ? 'youtube-shorts' : 'youtube';
             slide.embedUrl = ytResult.embedUrl;
-            console.log(ytResult.isShorts ? '📱 유튜브 숏츠 (240% 크기, 소리 ON, 무한 루프)' : '📺 유튜브 일반');
+            console.log(ytResult.isShorts ? '📱 유튜브 숏츠 (200% 크기, 소리 ON, 무한 루프, 위아래 여백 표시)' : '📺 유튜브 일반');
           }
           else {
             const lowerUrl = url.toLowerCase();
@@ -1571,9 +1571,9 @@
       }
 
       onMounted(async () => {
-        console.log('🚀 수업시간표 v3.0.1.1 시작');
+        console.log('🚀 수업시간표 v3.0.1.2 시작');
         console.log('🔊 숏츠 소리 켜짐 (mute=0)');
-        console.log('📏 숏츠 크기 축소 (300% → 240%)');
+        console.log('📏 숏츠 크기 200% (위아래 여백 살짝 표시)');
         
         onAuthStateChanged(auth, async (u) => {
           user.value = u;
@@ -1656,121 +1656,119 @@
 </body>
 </html>'''
 
-with open('/home/user/수업시간표_v3.0.1.1.html', 'w', encoding='utf-8') as f:
-    f.write(html_v3_1_1)
+with open('/home/user/수업시간표_v3.0.1.2.html', 'w', encoding='utf-8') as f:
+    f.write(html_v3_1_2)
 
 print("="*80)
-print("✅ 유튜브 숏츠 개선 완료!")
+print("✅ 숏츠 크기 추가 축소 완료!")
 print("="*80)
 
 print("\n🔧 수정 사항:")
 print("="*80)
 
-print("\n1️⃣ 숏츠 소리 켜기")
-print("   - 기존: mute=1 (음소거)")
-print("   - 변경: mute=0 (소리 재생)")
-print("   - 위치: toYoutubeEmbed() 함수")
-
-print("\n2️⃣ 숏츠 크기 20% 축소")
-print("   - 기존: scale(3.0) - 300% 확대")
-print("   - 변경: scale(2.4) - 240% 확대 (20% 축소)")
-print("   - 위치: CSS .youtube-shorts-wrapper iframe")
+print("\n📏 숏츠 크기 더 축소")
+print("   - 기존: scale(2.4) - 240% 확대")
+print("   - 변경: scale(2.0) - 200% 확대")
+print("   - 결과: 위아래 검은 여백 살짝 보임")
 
 print("\n" + "="*80)
-print("📊 변경 전/후 비교")
+print("📊 크기 변화 비교")
 print("="*80)
 
-print("\n【변경 전】")
-print("   🔇 소리: 꺼짐 (mute=1)")
-print("   📏 크기: 300% (scale(3.0))")
-print("   ⚠️  문제: 소리가 안 들리고 화면이 너무 큼")
+print("\nv3.0.0:")
+print("   📐 scale(3.0) = 300%")
+print("   ⚠️  화면을 완전히 채움, 너무 큼")
 
-print("\n【변경 후】")
-print("   🔊 소리: 켜짐 (mute=0)")
-print("   📏 크기: 240% (scale(2.4))")
-print("   ✅ 개선: 소리 재생되고 적당한 크기")
+print("\nv3.0.1.1:")
+print("   📐 scale(2.4) = 240%")
+print("   ✅ 적당한 크기")
+
+print("\nv3.0.1.2 (현재):")
+print("   📐 scale(2.0) = 200%")
+print("   ✅ 위아래 여백 살짝 보임")
+print("   ✅ 영상 전체가 잘 보임")
 
 print("\n" + "="*80)
-print("💡 변경된 코드 위치")
+print("🎯 시각적 효과")
 print("="*80)
 
-print("\n📍 위치 1: CSS (상단)")
+print("\n【240% (이전)】")
+print("   ┌─────────────────┐")
+print("   │                 │  ← 거의 화면 가득")
+print("   │                 │")
+print("   │    유튜브숏츠    │")
+print("   │                 │")
+print("   │                 │")
+print("   └─────────────────┘")
+
+print("\n【200% (현재)】")
+print("   ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬  ← 검은 여백 (살짝)")
+print("   ┌─────────────────┐")
+print("   │                 │")
+print("   │    유튜브숏츠    │")
+print("   │                 │")
+print("   └─────────────────┘")
+print("   ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬  ← 검은 여백 (살짝)")
+
+print("\n" + "="*80)
+print("⚙️ 크기 조정 가이드")
+print("="*80)
+
+print("\n원하는 크기에 따라 선택:")
 print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-print(".youtube-shorts-wrapper iframe {")
-print("  transform: translate(-50%, -50%) scale(2.4) !important;")
-print("  /* 기존: scale(3.0) */")
-print("}")
 
-print("\n📍 위치 2: JavaScript (하단)")
-print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-print("if (isShorts) {")
-print("  return {")
-print("    embedUrl: `...&mute=0&...`,")
-print("    /* 기존: mute=1 */")
-print("    isShorts: true")
-print("  };")
-print("}")
+print("\n【여백 없이 꽉 채우고 싶다면】")
+print("   scale(2.0) → scale(2.6)")
+print("   위치: CSS .youtube-shorts-wrapper iframe")
+
+print("\n【여백을 더 많이 보이고 싶다면】")
+print("   scale(2.0) → scale(1.8)")
+print("   영상이 더 작아지고 여백 증가")
+
+print("\n【정확히 맞추고 싶다면】")
+print("   scale(2.0) → scale(2.2)")
+print("   아주 살짝만 여백")
 
 print("\n" + "="*80)
-print("🎯 테스트 방법")
+print("💡 추천 설정")
 print("="*80)
 
-print("\n1. 파일 다운로드")
-print("   - 수업시간표_v3.0.1.1.html")
+print("\n✨ 일반 교실 (20-24인치 모니터):")
+print("   → scale(2.0) 추천")
+print("   → 위아래 살짝 여백, 가독성 좋음")
 
-print("\n2. Firebase 설정 입력")
-print("   - 자신의 firebaseConfig로 교체")
+print("\n✨ 대형 TV (40인치+):")
+print("   → scale(2.4) 추천")
+print("   → 화면 꽉 채움")
 
-print("\n3. GitHub 업로드 또는 로컬 테스트")
-
-print("\n4. 유튜브 숏츠 추가")
-print("   - 관리자 모드 활성화")
-print("   - '슬라이드 추가' 클릭")
-print("   - 숏츠 URL 입력")
-print("   - 예: https://youtube.com/shorts/xxxxx")
-
-print("\n5. 확인사항")
-print("   ✅ 소리가 들리는지 확인")
-print("   ✅ 화면 크기가 적당한지 확인")
-print("   ✅ 상하 검은 막대가 적절한지 확인")
+print("\n✨ 복도 디스플레이:")
+print("   → scale(1.8) 추천")
+print("   → 여백 많이, 안정적")
 
 print("\n" + "="*80)
-print("⚙️ 추가 조정 방법")
+print("📝 버전 히스토리")
 print("="*80)
 
-print("\n【크기를 더 줄이고 싶다면】")
-print("   scale(2.4) → scale(2.0)")
-print("   (240% → 200%)")
+print("\nv3.0.1.2 (현재)")
+print("  🔊 숏츠 소리 ON")
+print("  📏 숏츠 크기 200% (위아래 여백 살짝)")
 
-print("\n【크기를 더 키우고 싶다면】")
-print("   scale(2.4) → scale(2.8)")
-print("   (240% → 280%)")
-
-print("\n【소리를 다시 끄고 싶다면】")
-print("   mute=0 → mute=1")
-
-print("\n" + "="*80)
-print("📝 버전 정보")
-print("="*80)
-
-print("\nv3.0.1.1 (현재)")
-print("  - 유튜브 숏츠 소리 켜짐")
-print("  - 유튜브 숏츠 크기 240%")
-print("  - 슬라이드 전체화면 개선")
+print("\nv3.0.1.1")
+print("  🔊 숏츠 소리 ON")
+print("  📏 숏츠 크기 240%")
 
 print("\nv3.0.1")
-print("  - 슬라이드 전체화면 모드")
-print("  - 이미지 object-fit: contain")
-print("  - 관리 영역 숨김")
+print("  📺 슬라이드 전체화면 모드")
+print("  🖼️  이미지 object-fit: contain")
 
 print("\nv3.0")
-print("  - 초기 버전")
-print("  - 유튜브 숏츠 300% 확대, 음소거")
+print("  🔇 숏츠 소리 OFF")
+print("  📏 숏츠 크기 300%")
 
 print("\n" + "="*80)
 print("💾 파일 저장 완료")
 print("="*80)
-print("\n파일명: 수업시간표_v3.0.1.1.html")
-print("크기: 약 85KB")
-print("\n다운로드해서 사용하세요!")
+print("\n파일명: 수업시간표_v3.0.1.2.html")
+print("\n다운로드해서 테스트해보세요!")
+print("마음에 들지 않으면 scale 값을 조정하세요!")
 print("\n" + "="*80)

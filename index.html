@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>구례중 수업시간표</title>
+  <title>수업시간표 v3.0</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -28,6 +28,17 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
+    }
+
+    /* 전체화면 모드일 때 이미지 전체 보이기 */
+    .media-contain {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
       display: block;
     }
 
@@ -201,7 +212,7 @@
     <div class="login-box">
       <div class="mb-6">
         <i class="fa-solid fa-school text-6xl text-indigo-600 mb-4"></i>
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">구례중학교</h1>
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">{{ schoolName }}</h1>
         <h2 class="text-xl font-bold text-gray-700">수업시간표</h2>
       </div>
      
@@ -223,6 +234,63 @@
   </div>
 
   <template v-else>
+    <!-- 설정 모달 -->
+    <div v-if="showSettingsModal" class="modal-overlay" @click.self="showSettingsModal = false">
+      <div class="modal-content">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-2xl font-bold">⚙️ 시스템 설정</h2>
+          <button @click="showSettingsModal = false" class="text-gray-500 hover:text-gray-700">
+            <i class="fa-solid fa-xmark text-2xl"></i>
+          </button>
+        </div>
+
+        <div class="space-y-6">
+          <div>
+            <label class="block font-bold mb-2">🏫 학교 이름</label>
+            <input v-model="tempSchoolName" type="text"
+                   class="w-full border-2 rounded px-4 py-3 text-lg"
+                   placeholder="예: 구례중학교" />
+          </div>
+
+          <div>
+            <label class="block font-bold mb-2">📚 학급 구성</label>
+            <div class="space-y-3">
+              <div v-for="grade in [1, 2, 3]" :key="grade" class="flex items-center gap-3">
+                <span class="w-20 font-semibold">{{ grade }}학년:</span>
+                <select v-model="tempClassCounts[grade]" class="border-2 rounded px-3 py-2 flex-1">
+                  <option :value="1">1개반</option>
+                  <option :value="2">2개반</option>
+                  <option :value="3">3개반</option>
+                  <option :value="4">4개반</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-blue-50 rounded-lg">
+            <p class="text-sm text-gray-700">
+              <strong>💡 안내:</strong><br/>
+              • 학교 이름과 학급 구성을 변경할 수 있습니다<br/>
+              • 저장 후 시간표를 다시 입력해야 합니다<br/>
+              • 기존 데이터는 유지되지만 학급이 줄어들면 해당 데이터는 숨겨집니다
+            </p>
+          </div>
+
+          <div class="flex gap-2">
+            <button @click="saveSettings"
+                    class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded">
+              <i class="fa-solid fa-check"></i> 저장
+            </button>
+            <button @click="showSettingsModal = false"
+                    class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 rounded">
+              취소
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 행사 모달 -->
     <div v-if="showEventModal" class="modal-overlay" @click.self="showEventModal = false">
       <div class="modal-content">
         <div class="flex items-center justify-between mb-4">
@@ -306,13 +374,15 @@
       </div>
     </div>
 
-    <aside v-if="showSlides" class="h-full bg-black relative overflow-hidden" :style="{ width: slideWidth }">
+    <!-- 슬라이드 영역 -->
+    <aside v-if="showSlides" class="h-full bg-black relative overflow-hidden" :style="slideAreaStyle">
       <div v-if="slides.length" class="slide-container">
         <template v-for="(s, idx) in slides" :key="idx">
           <div v-show="idx === currentSlideIndex" class="absolute inset-0 fade">
+            <!-- 비디오 -->
             <video v-if="s.type === 'video'"
                    :ref="el => { if(el && idx === currentSlideIndex) playVideo(el) }"
-                   class="media-cover"
+                   :class="slideFullscreen ? 'media-contain' : 'media-cover'"
                    :src="s.url"
                    autoplay
                    muted
@@ -321,6 +391,7 @@
                    @loadeddata="onVideoLoaded(s.url)"
                    @error="handleMediaError('video', s.url, $event)"></video>
 
+            <!-- 구글 드라이브 비디오 -->
             <iframe v-else-if="s.type === 'gdrive-video'"
                     class="gdrive-iframe"
                     :src="s.previewUrl"
@@ -328,6 +399,7 @@
                     allow="autoplay"
                     allowfullscreen></iframe>
 
+            <!-- 유튜브 숏츠 -->
             <div v-else-if="s.type === 'youtube-shorts'" class="youtube-shorts-wrapper">
               <iframe :src="s.embedUrl"
                       :id="'youtube-shorts-' + idx"
@@ -337,6 +409,7 @@
                       allowfullscreen></iframe>
             </div>
 
+            <!-- 유튜브 일반 -->
             <iframe v-else-if="s.type === 'youtube'"
                     class="youtube-iframe"
                     :src="s.embedUrl"
@@ -346,15 +419,17 @@
                     referrerpolicy="strict-origin-when-cross-origin"
                     allowfullscreen></iframe>
 
+            <!-- 구글 드라이브 이미지 - 전체화면 시 contain -->
             <img v-else-if="s.type === 'gdrive-image'"
-                 class="media-cover"
+                 :class="slideFullscreen ? 'media-contain' : 'media-cover'"
                  :src="s.thumbnailUrl"
                  alt="Google Drive Image"
                  @load="onImageLoaded(s.url)"
                  @error="handleMediaError('gdrive-image', s.url, $event)" />
 
+            <!-- 일반 이미지 - 전체화면 시 contain -->
             <img v-else
-                 class="media-cover"
+                 :class="slideFullscreen ? 'media-contain' : 'media-cover'"
                  :src="s.url"
                  alt="slide"
                  @load="onImageLoaded(s.url)"
@@ -370,7 +445,8 @@
         </div>
       </div>
 
-      <div v-if="isAdminMode && !isKioskMode"
+      <!-- 슬라이드 관리 영역 - 전체화면 모드에서는 숨김 -->
+      <div v-if="isAdminMode && !isKioskMode && !slideFullscreen"
            class="absolute bottom-0 left-0 right-0 bg-black/80 text-white p-3 max-h-64 overflow-auto z-10">
         <div class="flex items-center justify-between mb-2">
           <div class="font-bold">슬라이드 관리 ({{ slides.length }})</div>
@@ -399,13 +475,14 @@
       </div>
     </aside>
 
-    <main class="h-full flex-1 flex flex-col bg-white">
+    <!-- 메인 시간표 영역 -->
+    <main class="h-full flex-1 flex flex-col bg-white" :style="mainAreaStyle">
 
       <header class="shrink-0 border-b bg-white px-4 py-3">
         <div class="flex items-center justify-between">
           <div class="flex-1 text-center select-none">
             <div class="font-extrabold tracking-tight" :class="isKioskMode ? 'text-4xl' : 'text-2xl'">
-              {{ todayDateStr }} ({{ todayDayLabel }}) 구례중 수업시간표
+              {{ todayDateStr }} ({{ todayDayLabel }}) {{ schoolName }} 수업시간표
             </div>
           </div>
 
@@ -439,47 +516,66 @@
       </header>
 
       <section v-if="isAdminMode && !isKioskMode"
-               class="shrink-0 border-b bg-gray-50 px-4 py-3 flex flex-wrap items-center gap-3">
-        <div class="font-bold text-gray-700 mr-2">
-          <i class="fa-solid fa-gear"></i> 관리자 도구
+               class="shrink-0 border-b bg-gray-50 px-4 py-3">
+        <!-- 크레딧 -->
+        <div class="text-xs text-gray-500 mb-2 text-right">
+          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0"
         </div>
+        
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="font-bold text-gray-700 mr-2">
+            <i class="fa-solid fa-gear"></i> 관리자 도구
+          </div>
 
-        <label class="text-sm text-gray-700 font-bold flex items-center gap-2">
-          편집 요일:
-          <select v-model="selectedDay" @change="loadDayData" class="border-2 border-blue-500 rounded px-3 py-2 bg-white font-bold text-base">
-            <option v-for="d in weekdays" :key="d" :value="d">{{ d}}요일</option>
-          </select>
-        </label>
+          <label class="text-sm text-gray-700 font-bold flex items-center gap-2">
+            편집 요일:
+            <select v-model="selectedDay" @change="loadDayData" class="border-2 border-blue-500 rounded px-3 py-2 bg-white font-bold text-base">
+              <option v-for="d in weekdays" :key="d" :value="d">{{ d}}요일</option>
+            </select>
+          </label>
 
-        <button @click="loadBaseToGrid"
-                class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded font-bold">
-          <i class="fa-solid fa-rotate-left"></i> 기본시간표 불러오기
-        </button>
+          <button @click="loadBaseToGrid"
+                  class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded font-bold">
+            <i class="fa-solid fa-rotate-left"></i> 기본시간표 불러오기
+          </button>
 
-        <button @click="saveOverride"
-                class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded font-bold">
-          <i class="fa-solid fa-save"></i> 수업변경 저장
-        </button>
+          <button @click="saveOverride"
+                  class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded font-bold">
+            <i class="fa-solid fa-save"></i> 수업변경 저장
+          </button>
 
-        <button @click="openEventModal"
-                class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-bold">
-          <i class="fa-solid fa-calendar-days"></i> 행사 관리
-        </button>
+          <button @click="openEventModal"
+                  class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-bold">
+            <i class="fa-solid fa-calendar-days"></i> 행사 관리
+          </button>
 
-        <button @click="saveBase"
-                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded font-bold">
-          <i class="fa-solid fa-floppy-disk"></i> 학기초 기본시간표 저장
-        </button>
+          <button @click="saveBase"
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded font-bold">
+            <i class="fa-solid fa-floppy-disk"></i> 학기초 기본시간표 저장
+          </button>
 
-        <button @click="toggleSlides"
-                class="px-4 py-2 rounded font-bold"
-                :class="showSlides ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-900'">
-          <i class="fa-solid" :class="showSlides ? 'fa-eye' : 'fa-eye-slash'"></i>
-          슬라이드 {{ showSlides ? '켜짐' : '꺼짐' }}
-        </button>
+          <button @click="toggleSlides"
+                  class="px-4 py-2 rounded font-bold"
+                  :class="showSlides ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-900'">
+            <i class="fa-solid" :class="showSlides ? 'fa-eye' : 'fa-eye-slash'"></i>
+            슬라이드 {{ showSlides ? '켜짐' : '꺼짐' }}
+          </button>
 
-        <div class="ml-auto text-xs text-gray-500">
-          현재: {{ selectedDay }}요일 편집중
+          <button @click="toggleSlideFullscreen"
+                  class="px-4 py-2 rounded font-bold"
+                  :class="slideFullscreen ? 'bg-cyan-600 text-white' : 'bg-gray-300 text-gray-900'">
+            <i class="fa-solid fa-tv"></i>
+            슬라이드 {{ slideFullscreen ? '전체화면' : '일반' }}
+          </button>
+
+          <button @click="openSettings"
+                  class="px-4 py-2 rounded font-bold bg-gray-600 hover:bg-gray-700 text-white">
+            <i class="fa-solid fa-cog"></i> 시스템 설정
+          </button>
+
+          <div class="ml-auto text-xs text-gray-500">
+            현재: {{ selectedDay }}요일 편집중
+          </div>
         </div>
       </section>
 
@@ -628,15 +724,46 @@
 
   createApp({
     setup() {
-      const classes = ['1-1','1-2','2-1','2-2','3-1','3-2'];
       const weekdays = ['월','화','수','목','금'];
-
       const configRef = doc(db, "school", "config");
 
       const user = ref(null);
       const isAdminMode = ref(false);
       const isKioskMode = ref(false);
       const showSlides = ref(true);
+      const slideFullscreen = ref(false);
+
+      const schoolName = ref('구례중학교');
+      const classCounts = ref({ 1: 2, 2: 2, 3: 2 });
+      
+      const showSettingsModal = ref(false);
+      const tempSchoolName = ref('');
+      const tempClassCounts = ref({ 1: 2, 2: 2, 3: 2 });
+
+      const classes = computed(() => {
+        const result = [];
+        for (let grade = 1; grade <= 3; grade++) {
+          const count = classCounts.value[grade] || 2;
+          for (let classNum = 1; classNum <= count; classNum++) {
+            result.push(`${grade}-${classNum}`);
+          }
+        }
+        return result;
+      });
+
+      const slideAreaStyle = computed(() => {
+        if (slideFullscreen.value) {
+          return { width: '100%' };
+        }
+        return { width: isKioskMode.value ? '20%' : '24%' };
+      });
+
+      const mainAreaStyle = computed(() => {
+        if (slideFullscreen.value) {
+          return { display: 'none' };
+        }
+        return {};
+      });
 
       const isFirebaseConfigured = computed(() => {
         return firebaseConfig.apiKey && 
@@ -663,8 +790,6 @@
 
       const slides = ref([]);
       const currentSlideIndex = ref(0);
-      const slideWidth = computed(() => (isKioskMode.value ? '20%' : '24%'));
-      
       const slideTimer = ref(null);
 
       const base = ref(makeEmptyTimetable());
@@ -679,7 +804,7 @@
         type: 'all',
         allName: '',
         gradeNames: { 1: '', 2: '', 3: '' },
-        classNames: { '1-1': '', '1-2': '', '2-1': '', '2-2': '', '3-1': '', '3-2': '' }
+        classNames: {}
       });
 
       const userName = computed(() => {
@@ -689,7 +814,47 @@
 
       function toggleSlides() {
         showSlides.value = !showSlides.value;
+        if (slideFullscreen.value && !showSlides.value) {
+          slideFullscreen.value = false;
+        }
         console.log('🎬 슬라이드:', showSlides.value ? '켜짐' : '꺼짐');
+      }
+
+      function toggleSlideFullscreen() {
+        slideFullscreen.value = !slideFullscreen.value;
+        if (slideFullscreen.value) {
+          showSlides.value = true;
+        }
+        console.log('📺 슬라이드 전체화면:', slideFullscreen.value ? 'ON' : 'OFF');
+        console.log('   - 이미지 모드:', slideFullscreen.value ? 'contain (전체보기)' : 'cover (꽉채움)');
+      }
+
+      function openSettings() {
+        tempSchoolName.value = schoolName.value;
+        tempClassCounts.value = { ...classCounts.value };
+        showSettingsModal.value = true;
+      }
+
+      async function saveSettings() {
+        schoolName.value = tempSchoolName.value || '구례중학교';
+        classCounts.value = { ...tempClassCounts.value };
+        
+        try {
+          await setDoc(configRef, { 
+            schoolName: schoolName.value,
+            classCounts: classCounts.value,
+            slides: slides.value 
+          }, { merge: true });
+          
+          showSettingsModal.value = false;
+          alert('✅ 설정이 저장되었습니다!\n시간표를 다시 입력해주세요.');
+          
+          grid.value = makeEmptyTimetable();
+          await loadDayData();
+        } catch (error) {
+          console.error('❌ 설정 저장 실패:', error);
+          alert('설정 저장 실패: ' + error.message);
+        }
       }
 
       watch(showSlides, (newValue) => {
@@ -726,7 +891,7 @@
         const t = {};
         for (let p = 1; p <= 7; p++) {
           t[p] = {};
-          for (const c of classes) t[p][c] = '';
+          for (const c of classes.value) t[p][c] = '';
         }
         return t;
       }
@@ -784,7 +949,7 @@
       function getEventGroups(period) {
         const evt = events.value[String(period)];
         if (!evt) {
-          return [{ isEvent: false, classes: classes }];
+          return [{ isEvent: false, classes: classes.value }];
         }
 
         const groups = [];
@@ -793,12 +958,12 @@
           groups.push({
             isEvent: true,
             eventName: evt.name,
-            classes: classes
+            classes: classes.value
           });
         } else if (evt.type === 'grade') {
           for (let g = 1; g <= 3; g++) {
             const gradeName = evt.data[g];
-            const gradeClasses = classes.filter(c => gradeFromClass(c) === g);
+            const gradeClasses = classes.value.filter(c => gradeFromClass(c) === g);
            
             if (gradeName) {
               groups.push({
@@ -817,7 +982,7 @@
           const eventClasses = [];
           const normalClasses = [];
          
-          for (const cls of classes) {
+          for (const cls of classes.value) {
             if (evt.data[cls]) {
               eventClasses.push({ cls, name: evt.data[cls] });
             } else {
@@ -847,7 +1012,7 @@
           }
         }
 
-        return groups.length > 0 ? groups : [{ isEvent: false, classes: classes }];
+        return groups.length > 0 ? groups : [{ isEvent: false, classes: classes.value }];
       }
 
       function formatEventDisplay(evt) {
@@ -927,7 +1092,7 @@
         const merged = {};
         for (let p = 1; p <= 7; p++) {
           merged[p] = {};
-          for (const c of classes) {
+          for (const c of classes.value) {
             const k = keyOf(p, c);
             merged[p][c] = ov[k] !== undefined ? ov[k] : (baseTT[p]?.[c] || '');
           }
@@ -979,7 +1144,7 @@
         const vPeriods = [1,2,3,4,5,6,7];
         const p = Number(period);
         const pIdx = vPeriods.indexOf(p);
-        const cIdx = classes.indexOf(cls);
+        const cIdx = classes.value.indexOf(cls);
         if (pIdx === -1 || cIdx === -1) return;
 
         const nextPeriod = vPeriods[pIdx + 1];
@@ -988,7 +1153,7 @@
           focusField(nextPeriod, cls, 'subject');
           return;
         }
-        const nextClass = classes[cIdx + 1] || classes[0];
+        const nextClass = classes.value[cIdx + 1] || classes.value[0];
         const firstPeriod = vPeriods[0];
         await nextTick();
         focusField(firstPeriod, nextClass, 'subject');
@@ -1070,7 +1235,11 @@
 
       async function setSlidesOnly() {
         try {
-          await setDoc(configRef, { slides: slides.value }, { merge: true });
+          await setDoc(configRef, { 
+            schoolName: schoolName.value,
+            classCounts: classCounts.value,
+            slides: slides.value 
+          }, { merge: true });
           console.log('✅ 슬라이드 저장 완료');
         } catch (error) {
           console.error('❌ 슬라이드 저장 실패:', error);
@@ -1082,17 +1251,18 @@
         const url = prompt(
           "🎬 미디어 URL 입력:\n\n" +
           "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
-          "📐 키오스크 모드 슬라이드 영역 크기:\n" +
-          "   • 화면 폭의 20% (1920x1080 화면 기준: 384 x 1080)\n" +
-          "   • 종횡비: 약 9:25 (세로로 긴 비율)\n" +
+          "📐 슬라이드 영역 크기 (키오스크 모드 기준):\n" +
+          "   • 일반: 화면 폭의 24%\n" +
+          "   • 키오스크: 화면 폭의 20%\n" +
+          "   • 전체화면: 100% (시간표 숨김, 이미지 전체 보임)\n" +
           "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
           "📸 이미지 권장 크기:\n" +
-          "   ✅ 최적: 720 x 1280 (9:16 세로형, HD)\n" +
-          "   ✅ 고화질: 1080 x 1920 (9:16 세로형, Full HD)\n" +
+          "   ✅ 최적: 450 x 1260 (세로형)\n" +
+          "   ✅ 고화질: 900 x 2520 (세로형 2배)\n" +
           "   ⚠️  가로형(16:9)은 상하가 잘려 보입니다!\n\n" +
           "🎥 동영상 권장 크기:\n" +
-          "   ✅ 720 x 1280 (HD)\n" +
-          "   ✅ 1080 x 1920 (Full HD)\n" +
+          "   ✅ 450 x 1260\n" +
+          "   ✅ 900 x 2520\n" +
           "   💡 유튜브 숏츠(9:16)가 가장 적합합니다!\n" +
           "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
           "지원 형식:\n" +
@@ -1134,7 +1304,7 @@
           if (ytResult) { 
             slide.type = ytResult.isShorts ? 'youtube-shorts' : 'youtube';
             slide.embedUrl = ytResult.embedUrl;
-            console.log(ytResult.isShorts ? '📱 유튜브 숏츠 (9:16 세로형 - 최적!)' : '📺 유튜브 일반');
+            console.log(ytResult.isShorts ? '📱 유튜브 숏츠 (300% 확대, 무한 루프)' : '📺 유튜브 일반');
           }
           else {
             const lowerUrl = url.toLowerCase();
@@ -1142,10 +1312,10 @@
                 lowerUrl.includes('.ogg') || lowerUrl.includes('.mov') || 
                 lowerUrl.includes('.avi')) {
               slide.type = 'video';
-              console.log('📹 비디오 (권장: 720x1280 또는 1080x1920)');
+              console.log('📹 비디오 (권장: 450x1260)');
             }
             else {
-              console.log('🖼️ 이미지 (권장: 720x1280 또는 1080x1920)');
+              console.log('🖼️ 이미지 (권장: 450x1260)');
             }
           }
         }
@@ -1281,7 +1451,7 @@
         const newOverrides = {};
        
         for (let p = 1; p <= 7; p++) {
-          for (const cls of classes) {
+          for (const cls of classes.value) {
             const cur = normalizeCell(grid.value[p]?.[cls] || '');
             const b = normalizeCell(base.value[p]?.[cls] || '');
             if (cur !== b) {
@@ -1312,8 +1482,11 @@
           type: 'all',
           allName: '',
           gradeNames: { 1: '', 2: '', 3: '' },
-          classNames: { '1-1': '', '1-2': '', '2-1': '', '2-2': '', '3-1': '', '3-2': '' }
+          classNames: {}
         };
+        for (const cls of classes.value) {
+          eventForm.value.classNames[cls] = '';
+        }
         showEventModal.value = true;
       }
 
@@ -1397,7 +1570,8 @@
       }
 
       onMounted(async () => {
-        console.log('🚀 앱 시작 - 키오스크 모드 최적 크기 안내 추가');
+        console.log('🚀 수업시간표 v3.0.1 시작');
+        console.log('📌 개선: 슬라이드 전체화면 모드에서 이미지 전체 보이기 + 관리 영역 숨김');
         
         onAuthStateChanged(auth, async (u) => {
           user.value = u;
@@ -1413,8 +1587,14 @@
             const configSnap = await getDoc(configRef);
             if (configSnap.exists()) {
               const d = configSnap.data();
+              if (d.schoolName) schoolName.value = d.schoolName;
+              if (d.classCounts) classCounts.value = d.classCounts;
               if (Array.isArray(d.slides)) slides.value = d.slides;
-              console.log('📊 로드된 슬라이드:', slides.value.length);
+              console.log('📊 로드된 설정:', { 
+                schoolName: schoolName.value, 
+                classCounts: classCounts.value,
+                slides: slides.value.length 
+              });
             }
           } catch (error) {
             console.error('❌ 설정 로드 실패:', error);
@@ -1432,11 +1612,16 @@
         login, logout, toggleAdmin, toggleKiosk,
         weekdays,
         selectedDay,
-        slides, currentSlideIndex, slideWidth,
+        slides, currentSlideIndex,
         showSlides, toggleSlides,
+        slideFullscreen, toggleSlideFullscreen,
+        slideAreaStyle, mainAreaStyle,
         addSlidePrompt, deleteSlide, moveSlide,
         onVideoLoaded, onImageLoaded,
         handleMediaError, playVideo,
+        schoolName, classCounts,
+        showSettingsModal, tempSchoolName, tempClassCounts,
+        openSettings, saveSettings,
         classes, classLabel,
         colHeaderBg, colBodyBg,
         tableRows, rowStyle,
@@ -1469,67 +1654,86 @@
 </body>
 </html>'''
 
-with open('/home/user/구례중_수업시간표_완성.html', 'w', encoding='utf-8') as f:
-    f.write(html_with_size_guide)
+with open('/home/user/수업시간표_v3.0.1.html', 'w', encoding='utf-8') as f:
+    f.write(html_v3_1)
 
 print("="*80)
-print("📐 키오스크 모드 최적 이미지/영상 크기 안내 추가!")
+print("✅ 슬라이드 전체화면 모드 개선 완료!")
 print("="*80)
 
-print("\n🖥️  키오스크 모드 슬라이드 영역:")
+print("\n🔧 수정 사항:")
 print("="*80)
-print("\n화면 해상도: 1920 x 1080 (Full HD) 기준")
-print("슬라이드 폭: 20% = 384px")
-print("슬라이드 높이: 1080px")
-print("\n종횡비: 약 9:25 (세로로 매우 긴 비율)")
+print("\n1️⃣ 이미지 전체 내용 보이기")
+print("   - 기존: object-fit: cover (잘려서 표시)")
+print("   - 변경: object-fit: contain (전체 내용 표시)")
+print("   - 조건: slideFullscreen이 true일 때만 적용")
+print("   - 검은 배경으로 여백 처리")
 
-print("\n" + "="*80)
-print("📸 이미지 권장 크기")
-print("="*80)
-print("\n✅ 최적 크기:")
-print("   • 720 x 1280 (9:16 세로형, HD)")
-print("   • 1080 x 1920 (9:16 세로형, Full HD)")
-print("\n⚠️  피해야 할 크기:")
-print("   • 1920 x 1080 (16:9 가로형)")
-print("   → 상하가 잘려서 내용이 보이지 않음!")
+print("\n2️⃣ 관리 영역 숨김")
+print("   - 슬라이드 관리 패널 조건 수정:")
+print("   - v-if=\"isAdminMode && !isKioskMode && !slideFullscreen\"")
+print("   - 전체화면 모드에서는 URL 주소와 추가 버튼 완전 숨김")
 
-print("\n" + "="*80)
-print("🎥 동영상 권장 크기")
-print("="*80)
-print("\n✅ 최적 크기:")
-print("   • 720 x 1280 (9:16 세로형, HD)")
-print("   • 1080 x 1920 (9:16 세로형, Full HD)")
-print("\n💡 추천:")
-print("   • 유튜브 숏츠 (자동으로 9:16 비율)")
-print("   • 인스타그램 릴스 (9:16)")
-print("   • TikTok 동영상 (9:16)")
+print("\n3️⃣ CSS 클래스 추가")
+print("   - .media-cover: 일반 모드 (꽉 채움)")
+print("   - .media-contain: 전체화면 모드 (전체 보임)")
+print("   - 동적으로 :class 바인딩")
 
 print("\n" + "="*80)
-print("📱 프롬프트 메시지 개선")
+print("💡 사용 방법")
 print("="*80)
-print("\n슬라이드 추가 시 표시되는 안내:")
-print("\n1. 키오스크 모드 영역 크기 설명")
-print("2. 이미지 권장 크기 (720x1280, 1080x1920)")
-print("3. 동영상 권장 크기")
-print("4. 가로형(16:9) 이미지 사용 시 주의사항")
-print("5. 유튜브 숏츠가 가장 적합하다는 팁")
+
+print("\n【슬라이드 전체화면 모드】")
+print("1. 관리자 모드 활성화")
+print("2. '슬라이드 전체화면' 버튼 클릭")
+print("\n✅ 결과:")
+print("   - 시간표 완전히 숨김")
+print("   - 슬라이드가 화면 100% 차지")
+print("   - 이미지 전체 내용 보임 (검은 배경)")
+print("   - 하단 관리 영역 숨김 (깔끔한 화면)")
+print("   - URL 주소와 추가 버튼 안 보임")
+
+print("\n【일반 모드로 복귀】")
+print("1. '슬라이드 전체화면' 버튼 다시 클릭")
+print("2. 시간표 다시 표시")
+print("3. 관리 영역 다시 표시")
 
 print("\n" + "="*80)
-print("💡 사용 팁")
+print("📐 이미지 표시 방식")
 print("="*80)
-print("\n1. 이미지 제작 시:")
-print("   - 포토샵/Canva에서 720x1280 또는 1080x1920 캔버스 생성")
-print("   - Instagram Story 템플릿 사용 (9:16 비율)")
-print("\n2. 동영상 촬영 시:")
-print("   - 스마트폰 세로 모드로 촬영")
-print("   - 유튜브 숏츠로 업로드 후 링크 사용")
-print("\n3. 기존 가로형 콘텐츠:")
-print("   - 상하에 여백 추가하여 9:16 비율로 변환")
-print("   - 또는 중요한 부분만 잘라서 사용")
+
+print("\n✨ 일반 모드 (슬라이드 20-24%):")
+print("   - object-fit: cover")
+print("   - 이미지가 영역을 꽉 채움")
+print("   - 넘치는 부분은 잘림")
+
+print("\n✨ 전체화면 모드 (슬라이드 100%):")
+print("   - object-fit: contain")
+print("   - 이미지 전체 내용 보임")
+print("   - 검은 배경으로 여백 처리")
+print("   - 가로/세로 비율 유지")
 
 print("\n" + "="*80)
-print("🚀 완성!")
+print("🎯 활용 예시")
 print("="*80)
-print("\n파일: 구례중_수업시간표_완성.html")
-print("\n슬라이드 추가 시 자세한 크기 안내가 표시됩니다!")
+
+print("\n📢 공지사항 전용 모드:")
+print("   1. 450x1260 공지 이미지 제작")
+print("   2. 슬라이드에 추가")
+print("   3. 전체화면 모드 활성화")
+print("   4. 공지사항이 깔끔하게 전체 화면에 표시")
+print("   5. 하단 관리 영역 없이 깔끔한 화면")
+
+print("\n📺 행사 안내 모드:")
+print("   1. 행사 포스터 이미지 준비")
+print("   2. 슬라이드 전체화면으로 표시")
+print("   3. 관리 영역 자동 숨김")
+print("   4. 전문적인 디스플레이처럼 보임")
+
+print("\n" + "="*80)
+print("💾 파일 저장")
+print("="*80)
+print("\n파일명: 수업시간표_v3.0.1.html")
+print("\n버전: v3.0.1 (슬라이드 전체화면 개선)")
+print("\n다운로드해서 테스트해보세요!")
 print("\n" + "="*80)

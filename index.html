@@ -1,12 +1,12 @@
 
-# 키오스크 모드 숏츠 영상 150%로 확대
+# 슬라이드 전체화면 모드에서 빠져나오는 방법 추가
 
-html_v3_1_6 = '''<!doctype html>
+html_v3_1_7 = '''<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>수업시간표 v3.0.1.6</title>
+  <title>수업시간표 v3.0.1.7</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -70,7 +70,7 @@ html_v3_1_6 = '''<!doctype html>
       position: absolute !important;
       top: 50% !important;
       left: 50% !important;
-      transform: translate(-50%, -50%) scale(2.0) !important;
+      transform: translate(-50%, -50%) scale(1.5) !important;
       transform-origin: center center !important;
       width: 100% !important;
       height: 100% !important;
@@ -192,6 +192,52 @@ html_v3_1_6 = '''<!doctype html>
       25% { transform: translateX(-10px); }
       75% { transform: translateX(10px); }
     }
+
+    /* 🆕 슬라이드 전체화면 종료 버튼 */
+    .fullscreen-exit-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fullscreen-exit-button:hover {
+      background: rgba(220, 38, 38, 0.9);
+      border-color: rgba(255, 255, 255, 0.8);
+      transform: scale(1.05);
+    }
+
+    /* 🆕 ESC 안내 텍스트 */
+    .esc-hint {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      animation: fadeInOut 3s ease-in-out infinite;
+    }
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
   </style>
 </head>
 
@@ -237,6 +283,19 @@ html_v3_1_6 = '''<!doctype html>
   </div>
 
   <template v-else>
+    <!-- 🆕 슬라이드 전체화면 종료 버튼 -->
+    <button v-if="slideFullscreen"
+            @click="toggleSlideFullscreen"
+            class="fullscreen-exit-button">
+      <i class="fa-solid fa-xmark"></i>
+      <span>전체화면 종료</span>
+    </button>
+
+    <!-- 🆕 ESC 키 안내 -->
+    <div v-if="slideFullscreen" class="esc-hint">
+      <i class="fa-solid fa-keyboard"></i> ESC 키를 누르면 종료됩니다
+    </div>
+
     <!-- 설정 모달 -->
     <div v-if="showSettingsModal" class="modal-overlay" @click.self="showSettingsModal = false">
       <div class="modal-content">
@@ -522,7 +581,7 @@ html_v3_1_6 = '''<!doctype html>
                class="shrink-0 border-b bg-gray-50 px-4 py-3">
         <!-- 크레딧 -->
         <div class="text-xs text-gray-500 mb-2 text-right">
-          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0.1.6"
+          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0.1.7"
         </div>
         
         <div class="flex flex-wrap items-center gap-3">
@@ -815,6 +874,14 @@ html_v3_1_6 = '''<!doctype html>
         return user.value.displayName || user.value.email || '사용자';
       });
 
+      // 🆕 ESC 키로 전체화면 종료
+      function handleEscKey(event) {
+        if (event.key === 'Escape' && slideFullscreen.value) {
+          console.log('⌨️  ESC 키로 슬라이드 전체화면 종료');
+          slideFullscreen.value = false;
+        }
+      }
+
       function toggleSlides() {
         showSlides.value = !showSlides.value;
         if (slideFullscreen.value && !showSlides.value) {
@@ -827,9 +894,11 @@ html_v3_1_6 = '''<!doctype html>
         slideFullscreen.value = !slideFullscreen.value;
         if (slideFullscreen.value) {
           showSlides.value = true;
+          console.log('📺 슬라이드 전체화면 ON');
+          console.log('💡 ESC 키를 눌러 종료할 수 있습니다');
+        } else {
+          console.log('📺 슬라이드 전체화면 OFF');
         }
-        console.log('📺 슬라이드 전체화면:', slideFullscreen.value ? 'ON' : 'OFF');
-        console.log('   - 이미지 모드:', slideFullscreen.value ? 'contain (전체보기)' : 'cover (꽉채움)');
       }
 
       function openSettings() {
@@ -1574,10 +1643,14 @@ html_v3_1_6 = '''<!doctype html>
       }
 
       onMounted(async () => {
-        console.log('🚀 수업시간표 v3.0.1.6 시작');
+        console.log('🚀 수업시간표 v3.0.1.7 시작');
         console.log('🔊 숏츠 소리 켜짐 (mute=0)');
         console.log('📏 숏츠 크기 150% (키오스크 최적화)');
         console.log('⏱️  숏츠 지속시간 120초 (2분)');
+        console.log('⌨️  ESC 키로 슬라이드 전체화면 종료 가능');
+        
+        // 🆕 ESC 키 이벤트 리스너 등록
+        document.addEventListener('keydown', handleEscKey);
         
         onAuthStateChanged(auth, async (u) => {
           user.value = u;
@@ -1660,104 +1733,127 @@ html_v3_1_6 = '''<!doctype html>
 </body>
 </html>'''
 
-with open('/home/user/수업시간표_v3.0.1.6.html', 'w', encoding='utf-8') as f:
-    f.write(html_v3_1_6)
+with open('/home/user/수업시간표_v3.0.1.7.html', 'w', encoding='utf-8') as f:
+    f.write(html_v3_1_7)
 
 print("="*80)
-print("✅ 숏츠 영상 크기 150% 완료!")
+print("✅ 슬라이드 전체화면 종료 기능 추가 완료!")
 print("="*80)
 
-print("\n🔧 수정 사항:")
+print("\n🔧 추가된 기능 3가지:")
 print("="*80)
 
-print("\n📏 숏츠 영상 크기 확대")
-print("   - 기존: scale(1.25) - 125%")
-print("   - 변경: scale(1.5) - 150%")
-print("   - 위치: CSS .youtube-shorts-wrapper iframe")
+print("\n1️⃣  우측 상단 종료 버튼")
+print("   📍 위치: 오른쪽 위 모서리")
+print("   🎨 스타일: 반투명 검정색 배경")
+print("   💡 동작: 클릭하면 전체화면 해제")
+
+print("\n2️⃣  ESC 키 종료")
+print("   ⌨️  키: Escape")
+print("   💡 동작: 어디서나 ESC를 누르면 종료")
+print("   📝 콘솔 메시지 출력")
+
+print("\n3️⃣  하단 안내 텍스트")
+print("   📍 위치: 화면 중앙 하단")
+print("   🎨 스타일: 깜빡이는 반투명 안내")
+print("   💬 내용: 'ESC 키를 누르면 종료됩니다'")
 
 print("\n" + "="*80)
-print("📊 크기 변화 히스토리")
+print("🎯 사용 시나리오")
 print("="*80)
 
-print("\nv3.0.1.4:  scale(0.75) = 75%   (아주 작음)")
-print("v3.0.1.5:  scale(1.25) = 125%  (적당)")
-print("v3.0.1.6:  scale(1.5) = 150%   (현재 - 키오스크 최적)")
+print("\n【관리자 모드에서】")
+print("1. 관리자 도구 → '슬라이드 전체화면' 클릭")
+print("   ↓")
+print("2. 슬라이드가 화면 전체를 차지")
+print("   ↓")
+print("3. 종료 방법:")
+print("   ✅ 우측 상단 'X 전체화면 종료' 버튼 클릭")
+print("   ✅ ESC 키 누르기")
+
+print("\n【종료 후】")
+print("   → 다시 시간표 + 슬라이드 모드로 복귀")
 
 print("\n" + "="*80)
-print("🎯 시각적 효과")
+print("🎨 UI 디자인")
 print("="*80)
 
-print("\n【125% (이전)】")
-print("   ▬▬▬  ← 조금 여백")
-print("   ┌────────┐")
-print("   │        │")
-print("   │  숏츠  │")
-print("   │        │")
-print("   └────────┘")
-print("   ▬▬▬  ← 조금 여백")
-
-print("\n【150% (현재)】")
-print("   ▬  ← 약간 여백")
-print("   ┌──────────┐")
-print("   │          │")
-print("   │   숏츠   │  ← 화면을 잘 채움")
-print("   │          │")
-print("   └──────────┘")
-print("   ▬  ← 약간 여백")
+print("\n┌─────────────────────────────────────────┐")
+print("│ [우측 상단]                              │")
+print("│  ┌──────────────────────┐               │")
+print("│  │ ✖ 전체화면 종료     │  ← 호버시 빨강 │")
+print("│  └──────────────────────┘               │")
+print("│                                         │")
+print("│                                         │")
+print("│         슬라이드 영상/이미지              │")
+print("│                                         │")
+print("│                                         │")
+print("│  [하단 중앙]                            │")
+print("│  ⌨️ ESC 키를 누르면 종료됩니다           │")
+print("│  (깜빡이는 안내 텍스트)                  │")
+print("└─────────────────────────────────────────┘")
 
 print("\n" + "="*80)
-print("💡 특징")
+print("💡 CSS 특징")
 print("="*80)
 
-print("\n✅ 장점:")
-print("   • 키오스크 모드에서 영상이 잘 보임")
-print("   • 화면을 효과적으로 활용")
-print("   • 여백이 적어서 시선 집중")
-print("   • 20% 슬라이드 영역에 최적화")
+print("\n🎨 종료 버튼 스타일:")
+print("   • 배경: 반투명 검정 (backdrop-filter: blur)")
+print("   • 호버: 빨간색으로 변경")
+print("   • 애니메이션: scale(1.05)")
+print("   • z-index: 10000 (최상위)")
 
-print("\n⚠️  주의:")
-print("   • 상하 여백이 약간만 남음")
-print("   • 거의 꽉 찬 느낌")
+print("\n✨ 안내 텍스트 스타일:")
+print("   • 배경: 반투명 검정")
+print("   • 모양: 둥근 캡슐형")
+print("   • 애니메이션: 투명도 변화 (fadeInOut)")
+print("   • z-index: 10000")
 
 print("\n" + "="*80)
-print("📝 버전 히스토리")
+print("🔍 코드 변경 사항")
 print("="*80)
 
-print("\nv3.0.1.6 (현재) - 2026-01-17")
-print("  🔊 숏츠 소리 ON")
-print("  📏 숏츠 크기 150% (키오스크 최적)")
-print("  ⏱️  숏츠 지속시간 120초 (2분)")
+print("\n1. CSS 추가:")
+print("   .fullscreen-exit-button  ← 종료 버튼")
+print("   .esc-hint               ← ESC 안내")
 
-print("\nv3.0.1.5")
-print("  📏 숏츠 크기 125%")
-print("  ⏱️  숏츠 지속시간 120초")
+print("\n2. HTML 추가:")
+print('   <button v-if="slideFullscreen" @click="toggleSlideFullscreen">')
+print('   <div v-if="slideFullscreen" class="esc-hint">')
 
-print("\nv3.0.1.4")
-print("  📏 숏츠 크기 75%")
+print("\n3. JS 추가:")
+print("   handleEscKey(event)     ← ESC 키 핸들러")
+print("   document.addEventListener('keydown', handleEscKey)")
 
 print("\n" + "="*80)
-print("⚙️ 추가 조정 가이드")
+print("📊 버전 비교")
 print("="*80)
 
-print("\n크기를 더 조정하고 싶다면 CSS에서:")
-print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("\nv3.0.1.6:")
+print("   ❌ 전체화면 들어가면 빠져나올 수 없음")
+print("   ❌ 새로고침만 가능")
 
-print("\n더 작게:")
-print("   scale(1.5) → scale(1.25)  (이전 버전)")
-print("   scale(1.5) → scale(1.0)   (원본)")
+print("\nv3.0.1.7 (현재):")
+print("   ✅ 우측 상단 종료 버튼")
+print("   ✅ ESC 키로 종료")
+print("   ✅ 안내 텍스트 표시")
 
-print("\n더 크게:")
-print("   scale(1.5) → scale(1.75)  (약간 더)")
-print("   scale(1.5) → scale(2.0)   (많이)")
+print("\n" + "="*80)
+print("🎮 테스트 방법")
+print("="*80)
 
-print("\n완전히 꽉 채우기:")
-print("   scale(1.5) → scale(2.4)   (v3.0 스타일)")
+print("\n1. 파일 열기")
+print("2. 로그인")
+print("3. 관리자 모드 ON")
+print("4. '슬라이드 전체화면' 클릭")
+print("5. 종료 테스트:")
+print("   ✅ 우측 상단 버튼 클릭")
+print("   ✅ ESC 키 누르기")
 
 print("\n" + "="*80)
 print("💾 파일 저장 완료")
 print("="*80)
-print("\n파일명: 수업시간표_v3.0.1.6.html")
-print("\n키오스크 모드에서 테스트해보세요!")
-print("150% 크기로 영상이 잘 보이는지 확인하세요!")
+print("\n파일명: 수업시간표_v3.0.1.7.html")
+print("\n이제 전체화면에서 빠져나올 수 있습니다! 🎉")
+print("우측 상단 버튼 또는 ESC 키를 사용하세요!")
 print("\n" + "="*80)
-

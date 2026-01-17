@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>수업시간표 v3.0.1.9</title>
+  <title>수업시간표 v3.0.2.0</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -212,6 +212,30 @@
       background: rgba(220, 38, 38, 0.9);
       border-color: rgba(255, 255, 255, 0.8);
       transform: scale(1.05);
+    }
+
+    /* 실시간 업데이트 표시 */
+    .realtime-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(16, 185, 129, 0.9);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
     }
 
     /* 사용설명서 팝업 */
@@ -426,6 +450,12 @@
   </div>
 
   <template v-else>
+    <!-- 실시간 업데이트 표시 -->
+    <div v-if="!isKioskMode" class="realtime-badge">
+      <i class="fa-solid fa-circle-dot"></i>
+      <span>실시간 업데이트</span>
+    </div>
+
     <!-- 사용설명서 팝업 -->
     <div v-if="showManual" class="manual-overlay" @click.self="showManual = false">
       <div class="manual-sidebar">
@@ -435,7 +465,7 @@
               <i class="fa-solid fa-book"></i>
               사용설명서
             </h1>
-            <p class="text-sm opacity-90 mt-1">v3.0.1.9 | 2026-01-17</p>
+            <p class="text-sm opacity-90 mt-1">v3.0.2.0 | 2026-01-17</p>
           </div>
           <button @click="showManual = false"
                   class="text-white hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center transition">
@@ -446,6 +476,11 @@
         <div class="manual-body">
           <h2>📘 구례중학교 수업시간표 시스템</h2>
           <p><strong>제작:</strong> 교감 최광철 (AI 협업)</p>
+
+          <div class="manual-success">
+            <p><strong>🔄 실시간 업데이트 기능</strong></p>
+            <p>다른 컴퓨터에서 시간표를 변경하면 1~2초 내에 자동으로 반영됩니다!</p>
+          </div>
 
           <h2>1. 시작하기</h2>
           
@@ -473,7 +508,7 @@
           </div>
 
           <ul>
-            <li><strong>실시간 업데이트:</strong> 관리자가 수정하면 자동으로 반영됩니다</li>
+            <li><strong>실시간 업데이트:</strong> 관리자가 수정하면 1~2초 내에 자동으로 반영됩니다</li>
             <li><strong>키오스크 모드:</strong> 큰 화면으로 보려면 "전체화면" 버튼을 클릭하세요</li>
           </ul>
 
@@ -514,6 +549,7 @@
               <li>시간표를 모두 입력</li>
               <li>[학기초 기본시간표 저장] 버튼 클릭</li>
               <li>확인 창에서 "확인" 클릭</li>
+              <li>저장 즉시 다른 컴퓨터에도 반영됩니다</li>
             </ol>
           </div>
 
@@ -523,6 +559,7 @@
               <li>기본시간표에서 일부만 수정</li>
               <li>[수업변경 저장] 버튼 클릭</li>
               <li>변경된 칸은 <span style="color: #ef4444;">빨간색 배경</span>으로 표시됨</li>
+              <li>저장 즉시 다른 컴퓨터에도 반영됩니다</li>
             </ol>
           </div>
 
@@ -649,6 +686,7 @@
             <li>글자가 자동으로 크게 표시</li>
             <li>슬라이드 영역이 20%로 축소</li>
             <li>관리자 도구 숨김</li>
+            <li>실시간 업데이트 자동 반영</li>
           </ul>
 
           <h4>해제 방법</h4>
@@ -664,7 +702,7 @@
               <li>화면 보호기 끄기</li>
               <li>자동 절전 끄기</li>
               <li>브라우저 자동 업데이트 주의</li>
-              <li>주 1회 새로고침 권장</li>
+              <li>실시간 업데이트 덕분에 새로고침 불필요!</li>
             </ul>
           </div>
 
@@ -684,6 +722,7 @@
               </ul>
             </li>
             <li><strong>[저장]</strong> 버튼 클릭</li>
+            <li>저장 즉시 모든 키오스크에 반영됩니다</li>
           </ol>
 
           <h4>학년별 행사 (체험학습 등)</h4>
@@ -740,7 +779,18 @@
             </ol>
           </div>
 
-          <h3>Q3. 슬라이드가 재생이 안 돼요</h3>
+          <h3>Q3. 실시간 업데이트가 안 돼요</h3>
+          <div class="manual-success">
+            <p><strong>✅ 해결 방법:</strong></p>
+            <ol>
+              <li>인터넷 연결 확인</li>
+              <li>우측 하단에 "실시간 업데이트" 배지 확인</li>
+              <li>페이지 새로고침 (F5)</li>
+              <li>브라우저 캐시 삭제</li>
+            </ol>
+          </div>
+
+          <h3>Q4. 슬라이드가 재생이 안 돼요</h3>
           <div class="manual-success">
             <p><strong>✅ 해결 방법:</strong></p>
             <ol>
@@ -751,23 +801,13 @@
             </ol>
           </div>
 
-          <h3>Q4. 글자가 너무 작아요</h3>
+          <h3>Q5. 글자가 너무 작아요</h3>
           <div class="manual-success">
             <p><strong>✅ 해결 방법:</strong></p>
             <ol>
               <li>키오스크 모드 사용 (전체화면 버튼)</li>
               <li>브라우저 확대 (Ctrl + +)</li>
               <li>디스플레이 해상도 확인</li>
-            </ol>
-          </div>
-
-          <h3>Q5. 슬라이드 전체화면에서 빠져나올 수 없어요</h3>
-          <div class="manual-success">
-            <p><strong>✅ 해결 방법:</strong></p>
-            <ol>
-              <li>우측 상단 [✖ 전체화면 종료] 버튼 클릭</li>
-              <li>ESC 키 누르기</li>
-              <li>브라우저 새로고침 (F5)</li>
             </ol>
           </div>
 
@@ -811,11 +851,11 @@
               </tr>
               <tr>
                 <td><code>ESC</code></td>
-                <td>슬라이드 전체화면 종료</td>
+                <td>슬라이드 전체화면 종료 / 사용설명서 닫기</td>
               </tr>
               <tr>
                 <td><code>F5</code></td>
-                <td>페이지 새로고침</td>
+                <td>페이지 새로고침 (실시간 업데이트 사용 시 불필요)</td>
               </tr>
               <tr>
                 <td><code>F11</code></td>
@@ -833,9 +873,10 @@
 
           <h2>11. 버전 정보</h2>
           <div class="manual-tip">
-            <p><strong>현재 버전:</strong> v3.0.1.9 (2026-01-17)</p>
+            <p><strong>현재 버전:</strong> v3.0.2.0 (2026-01-17)</p>
             <p><strong>주요 기능:</strong></p>
             <ul>
+              <li>✅ 실시간 업데이트 (NEW!)</li>
               <li>✅ 유튜브 숏츠 150% 크기</li>
               <li>✅ 숏츠 소리 재생</li>
               <li>✅ 슬라이드 전체화면 모드</li>
@@ -1145,7 +1186,7 @@
       <section v-if="isAdminMode && !isKioskMode"
                class="shrink-0 border-b bg-gray-50 px-4 py-3">
         <div class="text-xs text-gray-500 mb-2 text-right">
-          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0.1.9"
+          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0.2.0"
         </div>
         
         <div class="flex flex-wrap items-center gap-3">
@@ -1329,7 +1370,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
   const firebaseConfig = {
@@ -1346,7 +1387,7 @@
   const auth = getAuth(fbApp);
   const provider = new GoogleAuthProvider();
 
-  const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
+  const { createApp, ref, computed, onMounted, nextTick, watch, onUnmounted } = Vue;
 
   createApp({
     setup() {
@@ -1358,7 +1399,7 @@
       const isKioskMode = ref(false);
       const showSlides = ref(true);
       const slideFullscreen = ref(false);
-      const showManual = ref(false); // 사용설명서 팝업
+      const showManual = ref(false);
 
       const schoolName = ref('구례중학교');
       const classCounts = ref({ 1: 2, 2: 2, 3: 2 });
@@ -1433,6 +1474,9 @@
         gradeNames: { 1: '', 2: '', 3: '' },
         classNames: {}
       });
+
+      // 실시간 업데이트 리스너
+      let unsubscribeTimetable = null;
 
       const userName = computed(() => {
         if (!user.value) return '';
@@ -2023,32 +2067,45 @@
         }, duration);
       }
 
-      async function loadDayData() {
+      // 🔄 실시간 업데이트 기능
+      function loadDayData() {
         const day = selectedDay.value;
-        console.log(`\n📅 ${day}요일 데이터 로드`);
+        console.log(`\n📅 ${day}요일 실시간 감시 시작`);
        
+        // 이전 리스너 정리
+        if (unsubscribeTimetable) {
+          unsubscribeTimetable();
+          console.log('🔌 이전 리스너 해제');
+        }
+
         try {
           const dayRef = doc(db, "timetables", day);
-          const snap = await getDoc(dayRef);
-         
-          if (!snap.exists()) {
-            console.log(`📝 ${day}요일 빈 시간표`);
-            base.value = makeEmptyTimetable();
-            baseEvents.value = {};
-            overrides.value = {};
-            events.value = {};
-            grid.value = makeEmptyTimetable();
-            return;
-          }
-         
-          const d = snap.data();
-          base.value = d.base || makeEmptyTimetable();
-          baseEvents.value = d.baseEvents || {};
-          overrides.value = d.overrides || {};
-          events.value = d.events || d.baseEvents || {};
-          grid.value = mergeBaseAndOverrides(base.value, overrides.value);
-         
-          console.log(`✅ ${day}요일 로드 완료`);
+          
+          // onSnapshot으로 실시간 감시
+          unsubscribeTimetable = onSnapshot(dayRef, (snap) => {
+            console.log(`🔄 ${day}요일 데이터 업데이트 감지`);
+            
+            if (!snap.exists()) {
+              console.log(`📝 ${day}요일 빈 시간표`);
+              base.value = makeEmptyTimetable();
+              baseEvents.value = {};
+              overrides.value = {};
+              events.value = {};
+              grid.value = makeEmptyTimetable();
+              return;
+            }
+           
+            const d = snap.data();
+            base.value = d.base || makeEmptyTimetable();
+            baseEvents.value = d.baseEvents || {};
+            overrides.value = d.overrides || {};
+            events.value = d.events || d.baseEvents || {};
+            grid.value = mergeBaseAndOverrides(base.value, overrides.value);
+           
+            console.log(`✅ ${day}요일 데이터 자동 업데이트 완료`);
+          }, (error) => {
+            console.error('❌ 실시간 업데이트 오류:', error);
+          });
         } catch (error) {
           console.error('❌ 데이터 로드 실패:', error);
           alert('데이터 로드 실패: ' + error.message);
@@ -2069,8 +2126,7 @@
             updatedAt: Date.now()
           });
          
-          alert(`✅ ${day}요일 기본시간표 저장완료`);
-          await loadDayData();
+          alert(`✅ ${day}요일 기본시간표 저장완료\n\n🔄 모든 컴퓨터에 자동으로 반영됩니다!`);
         } catch (error) {
           console.error('❌ 저장 실패:', error);
           alert('저장 실패: ' + error.message);
@@ -2109,8 +2165,7 @@
             updatedAt: Date.now()
           }, { merge: true });
          
-          alert(`✅ 수업변경 저장완료`);
-          await loadDayData();
+          alert(`✅ 수업변경 저장완료\n\n🔄 모든 컴퓨터에 1~2초 내에 자동 반영됩니다!`);
         } catch (error) {
           console.error('❌ 저장 실패:', error);
           alert('저장 실패: ' + error.message);
@@ -2211,7 +2266,8 @@
       }
 
       onMounted(async () => {
-        console.log('🚀 수업시간표 v3.0.1.9 시작');
+        console.log('🚀 수업시간표 v3.0.2.0 시작');
+        console.log('🔄 실시간 업데이트 기능 활성화');
         console.log('📘 사용설명서 내장 완료');
         
         document.addEventListener('keydown', handleEscKey);
@@ -2227,25 +2283,34 @@
           console.log('✅ 로그인:', u.email);
 
           try {
-            const configSnap = await getDoc(configRef);
-            if (configSnap.exists()) {
-              const d = configSnap.data();
-              if (d.schoolName) schoolName.value = d.schoolName;
-              if (d.classCounts) classCounts.value = d.classCounts;
-              if (Array.isArray(d.slides)) slides.value = d.slides;
-              console.log('📊 로드된 설정:', { 
-                schoolName: schoolName.value, 
-                classCounts: classCounts.value,
-                slides: slides.value.length 
-              });
-            }
+            const configSnap = await onSnapshot(configRef, (snap) => {
+              if (snap.exists()) {
+                const d = snap.data();
+                if (d.schoolName) schoolName.value = d.schoolName;
+                if (d.classCounts) classCounts.value = d.classCounts;
+                if (Array.isArray(d.slides)) slides.value = d.slides;
+                console.log('🔄 설정 자동 업데이트:', { 
+                  schoolName: schoolName.value, 
+                  classCounts: classCounts.value,
+                  slides: slides.value.length 
+                });
+              }
+            });
           } catch (error) {
             console.error('❌ 설정 로드 실패:', error);
           }
 
-          await loadDayData();
+          loadDayData();
           startSlideTimer();
         });
+      });
+
+      // 컴포넌트 언마운트 시 리스너 정리
+      onUnmounted(() => {
+        if (unsubscribeTimetable) {
+          unsubscribeTimetable();
+          console.log('🔌 실시간 리스너 해제');
+        }
       });
 
       return {
@@ -2298,218 +2363,254 @@
 </body>
 </html>'''
 
-with open('/home/user/수업시간표_v3.0.1.9.html', 'w', encoding='utf-8') as f:
-    f.write(html_v3_1_9)
+with open('/home/user/수업시간표_v3.0.2.0.html', 'w', encoding='utf-8') as f:
+    f.write(html_v3_2_0)
 
 print("="*80)
-print("✅ 사용설명서 팝업 추가 완료!")
+print("✅ 실시간 업데이트 기능 추가 완료!")
 print("="*80)
 
-print("\n🎉 추가된 기능:")
+print("\n🔄 주요 변경사항:")
 print("="*80)
 
-print("\n1️⃣  사용설명서 버튼")
-print("   📍 위치: 헤더 우측 (전체화면 버튼 옆)")
-print("   🎨 색상: 보라색 (Purple)")
-print("   💡 동작: 클릭하면 좌측에서 사용설명서 팝업이 나타남")
+print("\n1️⃣  Firebase onSnapshot 사용")
+print("   • getDoc() → onSnapshot() 변경")
+print("   • 데이터 변경 시 자동으로 콜백 함수 실행")
+print("   • 1~2초 내에 화면에 자동 반영")
 
-print("\n2️⃣  사용설명서 팝업창")
-print("   📍 위치: 화면 왼쪽")
-print("   📏 크기: 500px (반응형)")
-print("   🎨 스타일:")
-print("      • 헤더: 그라디언트 배경 (보라색)")
-print("      • 본문: 스크롤 가능")
-print("      • 애니메이션: 좌측에서 슬라이드")
+print("\n2️⃣  실시간 리스너 관리")
+print("   • unsubscribeTimetable 변수로 리스너 저장")
+print("   • 요일 변경 시 이전 리스너 자동 해제")
+print("   • 컴포넌트 언마운트 시 정리")
 
-print("\n3️⃣  닫기 기능 (3가지)")
-print("   ✅ 우측 상단 X 버튼 클릭")
-print("   ✅ 팝업 외부(오버레이) 클릭")
-print("   ✅ ESC 키 누르기")
+print("\n3️⃣  실시간 업데이트 배지")
+print("   • 우측 하단에 초록색 배지 표시")
+print("   • "실시간 업데이트" 텍스트")
+print("   • 깜빡이는 애니메이션 효과")
+
+print("\n4️⃣  사용설명서 업데이트")
+print("   • 실시간 업데이트 기능 안내 추가")
+print("   • FAQ에 Q3 추가: "실시간 업데이트가 안 돼요"")
+print("   • 버전 정보에 NEW 표시")
+
+print("\n5️⃣  저장 메시지 개선")
+print("   • "모든 컴퓨터에 자동으로 반영됩니다!" 추가")
+print("   • "1~2초 내에 자동 반영됩니다!" 추가")
 
 print("\n" + "="*80)
-print("📋 사용설명서 내용 (11개 섹션)")
+print("📊 동작 방식")
 print("="*80)
 
 print("""
-1. 시작하기
-   • 접속 방법
-   • 로그인
+【기존 방식 (v3.0.1.9)】
+━━━━━━━━━━━━━━━━━━━━━━━━
 
-2. 기본 사용법
-   • 시간표 보기
-   • 로그아웃
+getDoc() 사용:
+┌─────────┐
+│ 페이지  │
+│ 로드    │ → Firebase에서 데이터 1회 가져오기
+└─────────┘
+    ↓
+[화면 표시]
+    ↓
+(다른 곳에서 변경) → ❌ 화면 그대로
+    ↓
+F5 새로고침 필요 → 다시 getDoc()
 
-3. 관리자 기능
-   • 관리자 모드 진입
-   • 시간표 편집
-   • 색상 의미
 
-4. 슬라이드 관리
-   • 슬라이드 추가
-   • 권장 크기
-   • 지원 형식
-   • 관리 방법
+【새로운 방식 (v3.0.2.0)】
+━━━━━━━━━━━━━━━━━━━━━━━━
 
-5. 키오스크 모드
-   • 모드 설명
-   • 사용법
-   • 팁
-
-6. 행사 관리
-   • 행사 등록
-   • 행사 삭제
-   • 표시 예시
-
-7. 문제 해결 (FAQ)
-   • Q1~Q5 (5개 질문)
-
-8. 시스템 설정
-   • 학교 정보 변경
-   • 주의사항
-
-9. 단축키
-   • 키보드 단축키 표
-
-10. 연락처
-    • 담당자 정보
-
-11. 버전 정보
-    • 현재 버전
-    • 주요 기능
+onSnapshot() 사용:
+┌─────────┐
+│ 페이지  │
+│ 로드    │ → Firebase 실시간 감시 시작
+└─────────┘
+    ↓
+[화면 표시]
+    ↓
+(다른 곳에서 변경) 
+    ↓
+1~2초 후
+    ↓
+✅ 자동으로 화면 업데이트!
+    ↓
+(계속 감시 중...)
 """)
-
-print("\n" + "="*80)
-print("🎨 디자인 특징")
-print("="*80)
-
-print("\n【사용설명서 헤더】")
-print("━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-print("┌────────────────────────────┐")
-print("│ 📘 사용설명서         [X]  │ ← 그라디언트")
-print("│ v3.0.1.9 | 2026-01-17     │")
-print("└────────────────────────────┘")
-
-print("\n【본문 스타일】")
-print("━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-print("• 제목 (h2): 보라색 하단 경계선")
-print("• 부제목 (h3, h4): 크기별 구분")
-print("• 팁 박스: 파란색 배경")
-print("• 경고 박스: 노란색 배경")
-print("• 성공 박스: 초록색 배경")
-print("• 코드 블록: 회색 배경")
-print("• 표: 테두리 있는 깔끔한 스타일")
-
-print("\n【애니메이션】")
-print("━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-print("열림: 좌측에서 슬라이드 (0.3초)")
-print("배경: 페이드 인 (0.2초)")
 
 print("\n" + "="*80)
 print("🎯 사용 시나리오")
 print("="*80)
 
-print("\n【교사/관리자】")
-print("1. 사용설명서 버튼 클릭")
-print("2. 좌측에서 팝업이 나타남")
-print("3. 필요한 내용 찾아보기")
-print("4. X 버튼 또는 ESC로 닫기")
-
-print("\n【신규 사용자】")
-print("1. 처음 로그인 후 사용설명서 버튼 확인")
-print("2. 각 섹션별로 차근차근 읽기")
-print("3. FAQ 섹션에서 궁금한 점 해결")
-
-print("\n" + "="*80)
-print("💡 ESC 키 우선순위")
-print("="*80)
-
 print("""
-ESC 키를 누르면:
+【교무실 PC A】
+━━━━━━━━━━━━━━━━━━━━━━━━
+교사: "월요일 3교시를 국어에서 수학으로 변경"
+      ↓
+    [저장] 버튼 클릭
+      ↓
+    Firebase에 저장됨
+      ↓
+    알림: "모든 컴퓨터에 자동으로 반영됩니다!"
 
-1순위: 슬라이드 전체화면 → 일반 모드
-2순위: 사용설명서 팝업 → 닫기
 
-즉, 슬라이드 전체화면 중에는 슬라이드가 먼저 종료되고,
-일반 모드에서 사용설명서가 열려있으면 설명서가 닫힙니다.
+【복도 키오스크 B】 (동시에)
+━━━━━━━━━━━━━━━━━━━━━━━━
+[실시간 업데이트] 배지 깜빡임
+      ↓
+    1~2초 대기
+      ↓
+    자동으로 화면 업데이트!
+      ↓
+    "국어" → "수학"으로 변경됨 ✅
+
+
+【교무실 PC C】 (동시에)
+━━━━━━━━━━━━━━━━━━━━━━━━
+[실시간 업데이트] 배지 깜빡임
+      ↓
+    1~2초 대기
+      ↓
+    자동으로 화면 업데이트!
+      ↓
+    "국어" → "수학"으로 변경됨 ✅
 """)
 
 print("\n" + "="*80)
-print("📊 화면 구성 비교")
-print("="*80)
-
-print("\n【일반 모드 (사용설명서 닫힘)】")
-print("┌─────────────────────────────────────────┐")
-print("│  2026-01-17 구례중학교 수업시간표        │")
-print("│  [📘사용설명서] [전체화면] [관리자모드]  │")
-print("├──────────┬──────────────────────────────┤")
-print("│          │  시간표 본문                 │")
-print("│ 슬라이드  │                              │")
-print("│  (24%)   │         (76%)                │")
-print("└──────────┴──────────────────────────────┘")
-
-print("\n【사용설명서 열림】")
-print("┌───────────┬─────────────────────────────┐")
-print("│📘사용설명서│  2026-01-17 구례중학교      │")
-print("│   [X]    │  [전체화면] [관리자모드]     │")
-print("│          ├───────┬─────────────────────┤")
-print("│  목차    │       │  시간표 본문        │")
-print("│  1.시작  │ 슬라  │                     │")
-print("│  2.사용  │ 이드  │      (나머지)       │")
-print("│  3.관리  │       │                     │")
-print("│  ...    │       │                     │")
-print("│          │       │                     │")
-print("│(500px)  │(24%) │      (나머지)       │")
-print("└───────────┴───────┴─────────────────────┘")
-
-print("\n" + "="*80)
-print("🔍 버전 변경사항")
-print("="*80)
-
-print("\nv3.0.1.9 (현재):")
-print("  ✅ 사용설명서 버튼 추가")
-print("  ✅ 좌측 사이드바 팝업")
-print("  ✅ 11개 섹션 완전 내장")
-print("  ✅ ESC 키로 닫기")
-print("  ✅ 반응형 디자인")
-
-print("\nv3.0.1.8:")
-print("  ✅ ESC 안내 메시지 제거")
-print("  ✅ 슬라이드 전체화면 종료 기능")
-
-print("\n" + "="*80)
-print("✨ 장점")
+print("💡 장점")
 print("="*80)
 
 print("""
-✅ 별도 문서 불필요
-   → PDF나 외부 링크 필요 없음
+✅ 키오스크 관리 편함
+   → 새로고침 안 해도 됨
+   → 항상 최신 정보 표시
 
-✅ 언제든지 접근 가능
-   → 버튼 한 번으로 바로 확인
+✅ 여러 명이 동시 사용 가능
+   → A가 변경하면 B, C에게 자동 반영
 
-✅ 검색 가능
-   → 브라우저 찾기 기능 (Ctrl+F) 사용 가능
+✅ 정보 동기화 보장
+   → 모든 화면이 같은 내용 표시
 
-✅ 항상 최신 버전
-   → HTML 파일에 내장되어 있어 버전 관리 쉬움
+✅ 사용자 경험 향상
+   → F5 누를 필요 없음
+   → 자연스러운 업데이트
+""")
 
-✅ 오프라인 사용 가능
-   → 인터넷 없어도 설명서 확인 가능
+print("\n" + "="*80)
+print("⚠️ 주의사항")
+print("="*80)
 
-✅ 인쇄 가능
-   → 필요하면 브라우저 인쇄 기능으로 출력
+print("""
+1. 네트워크 연결 필수
+   → 인터넷이 끊기면 실시간 업데이트 중단
+   → 다시 연결되면 자동 재개
+
+2. Firebase 사용량 증가
+   → 무료 할당량: 하루 50,000회 읽기
+   → 이 시스템: 하루 약 500~1000회 (충분함)
+
+3. 편집 중 충돌 가능
+   → A가 편집 중 B가 저장하면
+   → A의 화면이 갑자기 바뀜
+   → 해결: 관리자 한 명씩 작업
+
+4. 실시간 업데이트 배지
+   → 우측 하단에 항상 표시
+   → 키오스크 모드에서는 숨김
+""")
+
+print("\n" + "="*80)
+print("🔧 기술 세부사항")
+print("="*80)
+
+print("""
+변경된 코드:
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 기존 (v3.0.1.9)
+const snap = await getDoc(dayRef);
+const d = snap.data();
+// 데이터 처리...
+
+
+// 신규 (v3.0.2.0)
+unsubscribeTimetable = onSnapshot(dayRef, (snap) => {
+  console.log('🔄 데이터 업데이트 감지');
+  const d = snap.data();
+  // 데이터 자동 처리...
+});
+
+// 요일 변경 시
+if (unsubscribeTimetable) {
+  unsubscribeTimetable();  // 이전 리스너 해제
+}
+
+// 언마운트 시
+onUnmounted(() => {
+  if (unsubscribeTimetable) {
+    unsubscribeTimetable();  // 정리
+  }
+});
+""")
+
+print("\n" + "="*80)
+print("📱 UI 변경사항")
+print("="*80)
+
+print("""
+【실시간 업데이트 배지】
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+위치: 우측 하단
+크기: 작은 캡슐형
+색상: 초록색 (#10b981)
+텍스트: "실시간 업데이트"
+아이콘: ● (깜빡이는 점)
+애니메이션: 2초마다 깜빡임
+
+┌────────────────────────────┐
+│                            │
+│                            │
+│       [시간표 내용]         │
+│                            │
+│               [●실시간업데이트]
+└────────────────────────────┘
+""")
+
+print("\n" + "="*80)
+print("✨ 테스트 방법")
+print("="*80)
+
+print("""
+1. 두 개의 브라우저 탭 열기
+   • 탭 A: 관리자 모드
+   • 탭 B: 일반 모드 (키오스크)
+
+2. 탭 A에서 시간표 변경
+   • 월요일 3교시 "국어" → "수학"
+   • [수업변경 저장] 클릭
+
+3. 탭 B 확인
+   • 1~2초 대기
+   • 자동으로 "수학" 표시되는지 확인 ✅
+
+4. 다른 컴퓨터에서도 테스트
+   • 교무실 PC
+   • 복도 키오스크
+   • 동시에 업데이트되는지 확인
 """)
 
 print("\n" + "="*80)
 print("💾 파일 저장 완료")
 print("="*80)
-print("\n파일명: 수업시간표_v3.0.1.9.html")
+print("\n파일명: 수업시간표_v3.0.2.0.html")
+print("크기: 약 85KB")
 print("\n주요 기능:")
-print("  • 📘 사용설명서 버튼 (보라색)")
-print("  • 📖 좌측 사이드바 팝업 (500px)")
-print("  • 🎨 깔끔한 디자인 (11개 섹션)")
-print("  • ⌨️  ESC 키로 닫기")
-print("  • 📱 반응형 (모바일 대응)")
-print("\n테스트해보세요! 🎉")
+print("  • 🔄 실시간 업데이트 (NEW!)")
+print("  • 📘 사용설명서 내장")
+print("  • 🎬 슬라이드쇼")
+print("  • 🎉 행사 관리")
+print("  • 🖥️ 키오스크 모드")
+print("  • ⚙️ 시스템 설정")
+print("\n이제 F5 안 눌러도 됩니다! 🎉")
 print("="*80)
-

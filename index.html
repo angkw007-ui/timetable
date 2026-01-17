@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>수업시간표 v3.0</title>
+  <title>수업시간표 v3.0.1.1</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -67,7 +67,7 @@
       position: absolute !important;
       top: 50% !important;
       left: 50% !important;
-      transform: translate(-50%, -50%) scale(3.0) !important;
+      transform: translate(-50%, -50%) scale(2.4) !important;
       transform-origin: center center !important;
       width: 100% !important;
       height: 100% !important;
@@ -519,7 +519,7 @@
                class="shrink-0 border-b bg-gray-50 px-4 py-3">
         <!-- 크레딧 -->
         <div class="text-xs text-gray-500 mb-2 text-right">
-          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0"
+          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0.1.1"
         </div>
         
         <div class="flex flex-wrap items-center gap-3">
@@ -1218,7 +1218,7 @@
           
           if (isShorts) {
             return {
-              embedUrl: `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&controls=0&modestbranding=1&rel=0&fs=0&iv_load_policy=3&disablekb=1`,
+              embedUrl: `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&loop=1&playlist=${id}&playsinline=1&controls=0&modestbranding=1&rel=0&fs=0&iv_load_policy=3&disablekb=1`,
               isShorts: true
             };
           } else {
@@ -1264,6 +1264,7 @@
           "   ✅ 450 x 1260\n" +
           "   ✅ 900 x 2520\n" +
           "   💡 유튜브 숏츠(9:16)가 가장 적합합니다!\n" +
+          "   🔊 숏츠는 소리가 재생됩니다 (240% 크기)\n" +
           "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
           "지원 형식:\n" +
           "   • 유튜브: youtube.com/watch?v=xxxxx\n" +
@@ -1304,7 +1305,7 @@
           if (ytResult) { 
             slide.type = ytResult.isShorts ? 'youtube-shorts' : 'youtube';
             slide.embedUrl = ytResult.embedUrl;
-            console.log(ytResult.isShorts ? '📱 유튜브 숏츠 (300% 확대, 무한 루프)' : '📺 유튜브 일반');
+            console.log(ytResult.isShorts ? '📱 유튜브 숏츠 (240% 크기, 소리 ON, 무한 루프)' : '📺 유튜브 일반');
           }
           else {
             const lowerUrl = url.toLowerCase();
@@ -1570,8 +1571,9 @@
       }
 
       onMounted(async () => {
-        console.log('🚀 수업시간표 v3.0.1 시작');
-        console.log('📌 개선: 슬라이드 전체화면 모드에서 이미지 전체 보이기 + 관리 영역 숨김');
+        console.log('🚀 수업시간표 v3.0.1.1 시작');
+        console.log('🔊 숏츠 소리 켜짐 (mute=0)');
+        console.log('📏 숏츠 크기 축소 (300% → 240%)');
         
         onAuthStateChanged(auth, async (u) => {
           user.value = u;
@@ -1654,86 +1656,121 @@
 </body>
 </html>'''
 
-with open('/home/user/수업시간표_v3.0.1.html', 'w', encoding='utf-8') as f:
-    f.write(html_v3_1)
+with open('/home/user/수업시간표_v3.0.1.1.html', 'w', encoding='utf-8') as f:
+    f.write(html_v3_1_1)
 
 print("="*80)
-print("✅ 슬라이드 전체화면 모드 개선 완료!")
+print("✅ 유튜브 숏츠 개선 완료!")
 print("="*80)
 
 print("\n🔧 수정 사항:")
 print("="*80)
-print("\n1️⃣ 이미지 전체 내용 보이기")
-print("   - 기존: object-fit: cover (잘려서 표시)")
-print("   - 변경: object-fit: contain (전체 내용 표시)")
-print("   - 조건: slideFullscreen이 true일 때만 적용")
-print("   - 검은 배경으로 여백 처리")
 
-print("\n2️⃣ 관리 영역 숨김")
-print("   - 슬라이드 관리 패널 조건 수정:")
-print("   - v-if=\"isAdminMode && !isKioskMode && !slideFullscreen\"")
-print("   - 전체화면 모드에서는 URL 주소와 추가 버튼 완전 숨김")
+print("\n1️⃣ 숏츠 소리 켜기")
+print("   - 기존: mute=1 (음소거)")
+print("   - 변경: mute=0 (소리 재생)")
+print("   - 위치: toYoutubeEmbed() 함수")
 
-print("\n3️⃣ CSS 클래스 추가")
-print("   - .media-cover: 일반 모드 (꽉 채움)")
-print("   - .media-contain: 전체화면 모드 (전체 보임)")
-print("   - 동적으로 :class 바인딩")
+print("\n2️⃣ 숏츠 크기 20% 축소")
+print("   - 기존: scale(3.0) - 300% 확대")
+print("   - 변경: scale(2.4) - 240% 확대 (20% 축소)")
+print("   - 위치: CSS .youtube-shorts-wrapper iframe")
 
 print("\n" + "="*80)
-print("💡 사용 방법")
+print("📊 변경 전/후 비교")
 print("="*80)
 
-print("\n【슬라이드 전체화면 모드】")
-print("1. 관리자 모드 활성화")
-print("2. '슬라이드 전체화면' 버튼 클릭")
-print("\n✅ 결과:")
-print("   - 시간표 완전히 숨김")
-print("   - 슬라이드가 화면 100% 차지")
-print("   - 이미지 전체 내용 보임 (검은 배경)")
-print("   - 하단 관리 영역 숨김 (깔끔한 화면)")
-print("   - URL 주소와 추가 버튼 안 보임")
+print("\n【변경 전】")
+print("   🔇 소리: 꺼짐 (mute=1)")
+print("   📏 크기: 300% (scale(3.0))")
+print("   ⚠️  문제: 소리가 안 들리고 화면이 너무 큼")
 
-print("\n【일반 모드로 복귀】")
-print("1. '슬라이드 전체화면' 버튼 다시 클릭")
-print("2. 시간표 다시 표시")
-print("3. 관리 영역 다시 표시")
+print("\n【변경 후】")
+print("   🔊 소리: 켜짐 (mute=0)")
+print("   📏 크기: 240% (scale(2.4))")
+print("   ✅ 개선: 소리 재생되고 적당한 크기")
 
 print("\n" + "="*80)
-print("📐 이미지 표시 방식")
+print("💡 변경된 코드 위치")
 print("="*80)
 
-print("\n✨ 일반 모드 (슬라이드 20-24%):")
-print("   - object-fit: cover")
-print("   - 이미지가 영역을 꽉 채움")
-print("   - 넘치는 부분은 잘림")
+print("\n📍 위치 1: CSS (상단)")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print(".youtube-shorts-wrapper iframe {")
+print("  transform: translate(-50%, -50%) scale(2.4) !important;")
+print("  /* 기존: scale(3.0) */")
+print("}")
 
-print("\n✨ 전체화면 모드 (슬라이드 100%):")
-print("   - object-fit: contain")
-print("   - 이미지 전체 내용 보임")
-print("   - 검은 배경으로 여백 처리")
-print("   - 가로/세로 비율 유지")
+print("\n📍 위치 2: JavaScript (하단)")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("if (isShorts) {")
+print("  return {")
+print("    embedUrl: `...&mute=0&...`,")
+print("    /* 기존: mute=1 */")
+print("    isShorts: true")
+print("  };")
+print("}")
 
 print("\n" + "="*80)
-print("🎯 활용 예시")
+print("🎯 테스트 방법")
 print("="*80)
 
-print("\n📢 공지사항 전용 모드:")
-print("   1. 450x1260 공지 이미지 제작")
-print("   2. 슬라이드에 추가")
-print("   3. 전체화면 모드 활성화")
-print("   4. 공지사항이 깔끔하게 전체 화면에 표시")
-print("   5. 하단 관리 영역 없이 깔끔한 화면")
+print("\n1. 파일 다운로드")
+print("   - 수업시간표_v3.0.1.1.html")
 
-print("\n📺 행사 안내 모드:")
-print("   1. 행사 포스터 이미지 준비")
-print("   2. 슬라이드 전체화면으로 표시")
-print("   3. 관리 영역 자동 숨김")
-print("   4. 전문적인 디스플레이처럼 보임")
+print("\n2. Firebase 설정 입력")
+print("   - 자신의 firebaseConfig로 교체")
+
+print("\n3. GitHub 업로드 또는 로컬 테스트")
+
+print("\n4. 유튜브 숏츠 추가")
+print("   - 관리자 모드 활성화")
+print("   - '슬라이드 추가' 클릭")
+print("   - 숏츠 URL 입력")
+print("   - 예: https://youtube.com/shorts/xxxxx")
+
+print("\n5. 확인사항")
+print("   ✅ 소리가 들리는지 확인")
+print("   ✅ 화면 크기가 적당한지 확인")
+print("   ✅ 상하 검은 막대가 적절한지 확인")
 
 print("\n" + "="*80)
-print("💾 파일 저장")
+print("⚙️ 추가 조정 방법")
 print("="*80)
-print("\n파일명: 수업시간표_v3.0.1.html")
-print("\n버전: v3.0.1 (슬라이드 전체화면 개선)")
-print("\n다운로드해서 테스트해보세요!")
+
+print("\n【크기를 더 줄이고 싶다면】")
+print("   scale(2.4) → scale(2.0)")
+print("   (240% → 200%)")
+
+print("\n【크기를 더 키우고 싶다면】")
+print("   scale(2.4) → scale(2.8)")
+print("   (240% → 280%)")
+
+print("\n【소리를 다시 끄고 싶다면】")
+print("   mute=0 → mute=1")
+
+print("\n" + "="*80)
+print("📝 버전 정보")
+print("="*80)
+
+print("\nv3.0.1.1 (현재)")
+print("  - 유튜브 숏츠 소리 켜짐")
+print("  - 유튜브 숏츠 크기 240%")
+print("  - 슬라이드 전체화면 개선")
+
+print("\nv3.0.1")
+print("  - 슬라이드 전체화면 모드")
+print("  - 이미지 object-fit: contain")
+print("  - 관리 영역 숨김")
+
+print("\nv3.0")
+print("  - 초기 버전")
+print("  - 유튜브 숏츠 300% 확대, 음소거")
+
+print("\n" + "="*80)
+print("💾 파일 저장 완료")
+print("="*80)
+print("\n파일명: 수업시간표_v3.0.1.1.html")
+print("크기: 약 85KB")
+print("\n다운로드해서 사용하세요!")
 print("\n" + "="*80)

@@ -1,9 +1,12 @@
-<!doctype html>
+
+# 사용설명서 팝업창 추가 (v3.0.1.9)
+
+html_v3_1_9 = '''<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>수업시간표 v3.0.1.8</title>
+  <title>수업시간표 v3.0.1.9</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -31,7 +34,6 @@
       display: block;
     }
 
-    /* 전체화면 모드일 때 이미지 전체 보이기 */
     .media-contain {
       position: absolute;
       top: 0;
@@ -190,7 +192,6 @@
       75% { transform: translateX(10px); }
     }
 
-    /* 슬라이드 전체화면 종료 버튼 */
     .fullscreen-exit-button {
       position: fixed;
       top: 20px;
@@ -214,6 +215,174 @@
       background: rgba(220, 38, 38, 0.9);
       border-color: rgba(255, 255, 255, 0.8);
       transform: scale(1.05);
+    }
+
+    /* 사용설명서 팝업 */
+    .manual-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 9999;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .manual-sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 500px;
+      max-width: 90vw;
+      background: white;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      animation: slideInLeft 0.3s ease-out;
+      z-index: 10000;
+    }
+
+    @keyframes slideInLeft {
+      from {
+        transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    .manual-header {
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .manual-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem;
+    }
+
+    .manual-body h2 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: #1f2937;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 0.5rem;
+    }
+
+    .manual-body h2:first-child {
+      margin-top: 0;
+    }
+
+    .manual-body h3 {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: #374151;
+    }
+
+    .manual-body h4 {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      color: #4b5563;
+    }
+
+    .manual-body p {
+      margin-bottom: 0.75rem;
+      line-height: 1.6;
+      color: #374151;
+    }
+
+    .manual-body ul, .manual-body ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .manual-body li {
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+
+    .manual-body code {
+      background: #f3f4f6;
+      padding: 0.2rem 0.4rem;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+
+    .manual-body pre {
+      background: #1f2937;
+      color: #f9fafb;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+
+    .manual-body pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    .manual-section {
+      background: #f9fafb;
+      border-left: 4px solid #667eea;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0.25rem;
+    }
+
+    .manual-tip {
+      background: #dbeafe;
+      border-left: 4px solid #3b82f6;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0.25rem;
+    }
+
+    .manual-warning {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0.25rem;
+    }
+
+    .manual-success {
+      background: #d1fae5;
+      border-left: 4px solid #10b981;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0.25rem;
+    }
+
+    .manual-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+
+    .manual-table th,
+    .manual-table td {
+      border: 1px solid #e5e7eb;
+      padding: 0.5rem;
+      text-align: left;
+    }
+
+    .manual-table th {
+      background: #f3f4f6;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -260,6 +429,433 @@
   </div>
 
   <template v-else>
+    <!-- 사용설명서 팝업 -->
+    <div v-if="showManual" class="manual-overlay" @click.self="showManual = false">
+      <div class="manual-sidebar">
+        <div class="manual-header">
+          <div>
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+              <i class="fa-solid fa-book"></i>
+              사용설명서
+            </h1>
+            <p class="text-sm opacity-90 mt-1">v3.0.1.9 | 2026-01-17</p>
+          </div>
+          <button @click="showManual = false"
+                  class="text-white hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark text-2xl"></i>
+          </button>
+        </div>
+
+        <div class="manual-body">
+          <h2>📘 구례중학교 수업시간표 시스템</h2>
+          <p><strong>제작:</strong> 교감 최광철 (AI 협업)</p>
+
+          <h2>1. 시작하기</h2>
+          
+          <h3>1.1 접속 방법</h3>
+          <div class="manual-section">
+            <p><strong>웹 주소:</strong></p>
+            <code>https://angkw007-ui.github.io/timetable/</code>
+            <p class="mt-2"><strong>권장 브라우저:</strong> Chrome, Edge</p>
+          </div>
+
+          <h3>1.2 로그인</h3>
+          <ol>
+            <li>페이지를 열면 로그인 화면이 나타납니다</li>
+            <li><strong>"Google 로그인"</strong> 버튼을 클릭합니다</li>
+            <li>Google 계정을 선택합니다 (학교 계정 권장)</li>
+            <li>로그인이 완료되면 오늘의 시간표가 표시됩니다</li>
+          </ol>
+
+          <h2>2. 기본 사용법</h2>
+          
+          <h3>2.1 시간표 보기</h3>
+          <div class="manual-tip">
+            <p><strong>💡 자동 표시</strong></p>
+            <p>로그인하면 오늘 요일의 시간표가 자동으로 표시됩니다.</p>
+          </div>
+
+          <ul>
+            <li><strong>실시간 업데이트:</strong> 관리자가 수정하면 자동으로 반영됩니다</li>
+            <li><strong>키오스크 모드:</strong> 큰 화면으로 보려면 "전체화면" 버튼을 클릭하세요</li>
+          </ul>
+
+          <h3>2.2 로그아웃</h3>
+          <ol>
+            <li>우측 상단의 <strong>"로그아웃"</strong> 버튼 클릭</li>
+            <li>확인 창에서 <strong>"확인"</strong> 클릭</li>
+          </ol>
+
+          <h2>3. 관리자 기능</h2>
+          
+          <h3>3.1 관리자 모드 진입</h3>
+          <div class="manual-section">
+            <p>우측 상단 <strong>[관리자 모드]</strong> 버튼 클릭</p>
+            <p>→ 관리자 도구 패널이 나타납니다</p>
+          </div>
+
+          <h3>3.2 시간표 편집</h3>
+          
+          <h4>📝 기본 편집</h4>
+          <ol>
+            <li><strong>요일 선택:</strong> "편집 요일" 드롭다운에서 수정할 요일 선택</li>
+            <li><strong>칸 클릭:</strong> 수정하고 싶은 시간표 칸을 클릭</li>
+            <li><strong>입력:</strong>
+              <ul>
+                <li>위쪽 입력창: <strong>과목명</strong> 입력</li>
+                <li>아래쪽 입력창: <strong>교사명</strong> 입력</li>
+              </ul>
+            </li>
+            <li><strong>이동:</strong> Enter 키를 누르면 다음 칸으로 이동</li>
+          </ol>
+
+          <h4>💾 저장 방법</h4>
+          
+          <div class="manual-success">
+            <p><strong>A. 학기 초 기본시간표 저장</strong></p>
+            <ol>
+              <li>시간표를 모두 입력</li>
+              <li>[학기초 기본시간표 저장] 버튼 클릭</li>
+              <li>확인 창에서 "확인" 클릭</li>
+            </ol>
+          </div>
+
+          <div class="manual-success">
+            <p><strong>B. 수업 변경 저장</strong></p>
+            <ol>
+              <li>기본시간표에서 일부만 수정</li>
+              <li>[수업변경 저장] 버튼 클릭</li>
+              <li>변경된 칸은 <span style="color: #ef4444;">빨간색 배경</span>으로 표시됨</li>
+            </ol>
+          </div>
+
+          <h4>🔄 기본시간표 불러오기</h4>
+          <p>일시적으로 변경한 내용을 되돌리려면 <strong>[기본시간표 불러오기]</strong> 버튼 클릭</p>
+
+          <h3>3.3 색상 의미</h3>
+          <table class="manual-table">
+            <thead>
+              <tr>
+                <th>배경색</th>
+                <th>의미</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="background: #FEF3C7;">노란색</td>
+                <td>1학년</td>
+              </tr>
+              <tr>
+                <td style="background: #E0F2FE;">하늘색</td>
+                <td>2학년</td>
+              </tr>
+              <tr>
+                <td style="background: #FCE7F3;">핑크색</td>
+                <td>3학년</td>
+              </tr>
+              <tr>
+                <td style="background: #FEE2E2; border: 2px solid #EF4444;">빨간색 테두리</td>
+                <td>기본시간표에서 변경됨</td>
+              </tr>
+              <tr>
+                <td style="background: #F3E8FF;">보라색</td>
+                <td>행사</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>4. 슬라이드 관리</h2>
+          
+          <h3>4.1 슬라이드 추가</h3>
+          <ol>
+            <li>관리자 모드 진입</li>
+            <li>좌측 슬라이드 영역 하단의 <strong>[+ 추가]</strong> 버튼 클릭</li>
+            <li>URL 입력 창에서 미디어 URL 입력</li>
+          </ol>
+
+          <h4>📸 권장 이미지 크기</h4>
+          <div class="manual-tip">
+            <ul>
+              <li><strong>최적:</strong> 450 x 1260 (세로형)</li>
+              <li><strong>고화질:</strong> 900 x 2520 (세로형 2배)</li>
+            </ul>
+          </div>
+
+          <div class="manual-warning">
+            <p><strong>⚠️ 주의:</strong> 가로형(16:9)은 상하가 잘려 보입니다!</p>
+          </div>
+
+          <h4>🎥 지원 형식</h4>
+          
+          <div class="manual-section">
+            <p><strong>유튜브 일반 영상</strong></p>
+            <code>https://www.youtube.com/watch?v=xxxxx</code>
+            <p class="text-sm mt-1">→ 15초 재생, 음소거</p>
+          </div>
+
+          <div class="manual-section" style="background: #d1fae5;">
+            <p><strong>유튜브 숏츠 ⭐ 추천</strong></p>
+            <code>https://www.youtube.com/shorts/xxxxx</code>
+            <p class="text-sm mt-1">→ 120초 재생, 소리 ON, 150% 크기</p>
+          </div>
+
+          <div class="manual-section">
+            <p><strong>구글 드라이브</strong></p>
+            <code>https://drive.google.com/file/d/xxxxx/view</code>
+            <p class="text-sm mt-1">→ 이미지/비디오 선택 창이 나타남</p>
+          </div>
+
+          <div class="manual-section">
+            <p><strong>직접 링크</strong></p>
+            <code>https://example.com/video.mp4</code><br/>
+            <code>https://example.com/image.jpg</code>
+          </div>
+
+          <h3>4.2 슬라이드 관리</h3>
+          <ul>
+            <li><strong>[↑] 위로:</strong> 슬라이드 순서를 앞으로 이동</li>
+            <li><strong>[↓] 아래로:</strong> 슬라이드 순서를 뒤로 이동</li>
+            <li><strong>[🗑️] 삭제:</strong> 슬라이드 삭제 (확인 필요)</li>
+          </ul>
+
+          <h3>4.3 슬라이드 on/off</h3>
+          <p><strong>[슬라이드 켜짐]</strong> ← 클릭하면 끄기</p>
+          <p><strong>[슬라이드 꺼짐]</strong> ← 클릭하면 켜기</p>
+
+          <h3>4.4 슬라이드 전체화면</h3>
+          <p><strong>[슬라이드 일반]</strong> ← 클릭하면 전체화면</p>
+          <p><strong>[슬라이드 전체화면]</strong> ← 클릭하면 일반</p>
+          
+          <div class="manual-tip">
+            <p><strong>전체화면 종료 방법:</strong></p>
+            <ul>
+              <li>우측 상단 <strong>[✖ 전체화면 종료]</strong> 버튼 클릭</li>
+              <li>키보드 <strong>ESC</strong> 키 누르기</li>
+            </ul>
+          </div>
+
+          <h2>5. 키오스크 모드</h2>
+          
+          <h3>5.1 키오스크 모드란?</h3>
+          <p>복도나 현관에 설치된 대형 디스플레이에서 시간표를 보여주는 모드입니다.</p>
+
+          <h3>5.2 키오스크 모드 사용법</h3>
+          
+          <h4>진입 방법</h4>
+          <div class="manual-section">
+            <p>우측 상단 <strong>[전체화면]</strong> 버튼 클릭</p>
+          </div>
+
+          <h4>특징</h4>
+          <ul>
+            <li>브라우저가 전체화면으로 전환</li>
+            <li>글자가 자동으로 크게 표시</li>
+            <li>슬라이드 영역이 20%로 축소</li>
+            <li>관리자 도구 숨김</li>
+          </ul>
+
+          <h4>해제 방법</h4>
+          <ol>
+            <li>[전체화면] 버튼 다시 클릭</li>
+            <li>키보드 ESC 키 누르기</li>
+          </ol>
+
+          <h3>5.3 키오스크 모드 팁</h3>
+          <div class="manual-tip">
+            <p><strong>💡 장기간 표시 시:</strong></p>
+            <ul>
+              <li>화면 보호기 끄기</li>
+              <li>자동 절전 끄기</li>
+              <li>브라우저 자동 업데이트 주의</li>
+              <li>주 1회 새로고침 권장</li>
+            </ul>
+          </div>
+
+          <h2>6. 행사 관리</h2>
+          
+          <h3>6.1 행사 등록</h3>
+          
+          <h4>전체 학교 행사 (입학식, 졸업식 등)</h4>
+          <ol>
+            <li>관리자 모드 진입</li>
+            <li><strong>[행사 관리]</strong> 버튼 클릭</li>
+            <li>행사 모달 창에서 입력:
+              <ul>
+                <li>교시 선택: 1교시</li>
+                <li>행사 범위: 전체 (모든 학급)</li>
+                <li>행사명: 입학식</li>
+              </ul>
+            </li>
+            <li><strong>[저장]</strong> 버튼 클릭</li>
+          </ol>
+
+          <h4>학년별 행사 (체험학습 등)</h4>
+          <div class="manual-section">
+            <p>교시 선택: 3교시</p>
+            <p>행사 범위: 학년별</p>
+            <ul>
+              <li>1학년: 과학관 체험학습</li>
+              <li>2학년: (빈칸 = 정상 수업)</li>
+              <li>3학년: 직업 체험</li>
+            </ul>
+          </div>
+
+          <h4>학급별 행사 (현장학습 등)</h4>
+          <div class="manual-section">
+            <p>교시 선택: 5교시</p>
+            <p>행사 범위: 학급별</p>
+            <ul>
+              <li>1-1: 박물관 견학</li>
+              <li>1-2: (빈칸 = 정상 수업)</li>
+              <li>2-1: 미술관 체험</li>
+              <li>2-2: 박물관 견학</li>
+            </ul>
+          </div>
+
+          <h3>6.2 행사 삭제</h3>
+          <ol>
+            <li><strong>[행사 관리]</strong> 버튼 클릭</li>
+            <li>등록된 행사 목록에서 <strong>[🗑️ 삭제]</strong> 클릭</li>
+            <li>확인 창에서 "확인" 클릭</li>
+          </ol>
+
+          <h2>7. 문제 해결 (FAQ)</h2>
+          
+          <h3>Q1. 로그인이 안 돼요</h3>
+          <div class="manual-success">
+            <p><strong>✅ 해결 방법:</strong></p>
+            <ol>
+              <li>인터넷 연결 확인</li>
+              <li>팝업 차단 해제</li>
+              <li>Google 계정 로그인 상태 확인</li>
+              <li>시크릿 모드에서 시도</li>
+            </ol>
+          </div>
+
+          <h3>Q2. 시간표가 저장이 안 돼요</h3>
+          <div class="manual-success">
+            <p><strong>✅ 해결 방법:</strong></p>
+            <ol>
+              <li>관리자 모드가 켜져 있는지 확인</li>
+              <li>로그인 상태 확인 (오른쪽 위 프로필 확인)</li>
+              <li>저장 버튼을 다시 클릭</li>
+              <li>새로고침 후 확인</li>
+            </ol>
+          </div>
+
+          <h3>Q3. 슬라이드가 재생이 안 돼요</h3>
+          <div class="manual-success">
+            <p><strong>✅ 해결 방법:</strong></p>
+            <ol>
+              <li>URL이 올바른지 확인</li>
+              <li>유튜브: 공개 영상인지 확인</li>
+              <li>구글 드라이브: 공유 설정 확인 (링크가 있는 모든 사용자)</li>
+              <li>직접 링크: CORS 정책 확인</li>
+            </ol>
+          </div>
+
+          <h3>Q4. 글자가 너무 작아요</h3>
+          <div class="manual-success">
+            <p><strong>✅ 해결 방법:</strong></p>
+            <ol>
+              <li>키오스크 모드 사용 (전체화면 버튼)</li>
+              <li>브라우저 확대 (Ctrl + +)</li>
+              <li>디스플레이 해상도 확인</li>
+            </ol>
+          </div>
+
+          <h3>Q5. 슬라이드 전체화면에서 빠져나올 수 없어요</h3>
+          <div class="manual-success">
+            <p><strong>✅ 해결 방법:</strong></p>
+            <ol>
+              <li>우측 상단 [✖ 전체화면 종료] 버튼 클릭</li>
+              <li>ESC 키 누르기</li>
+              <li>브라우저 새로고침 (F5)</li>
+            </ol>
+          </div>
+
+          <h2>8. 시스템 설정</h2>
+          
+          <h3>8.1 학교 정보 변경</h3>
+          <ol>
+            <li>관리자 모드 진입</li>
+            <li><strong>[시스템 설정]</strong> 버튼 클릭</li>
+            <li>설정 모달에서 입력:
+              <ul>
+                <li>🏫 학교 이름: 구례중학교</li>
+                <li>📚 학급 구성: 1학년 2개반, 2학년 2개반, 3학년 2개반</li>
+              </ul>
+            </li>
+            <li><strong>[저장]</strong> 버튼 클릭</li>
+          </ol>
+
+          <h3>8.2 학급 수 변경 시 주의사항</h3>
+          <div class="manual-warning">
+            <p><strong>⚠️ 중요:</strong></p>
+            <ul>
+              <li>학급 수를 줄이면 해당 학급의 데이터는 숨겨집니다</li>
+              <li>다시 늘리면 기존 데이터가 복원됩니다</li>
+              <li>학기 초에만 변경하는 것을 권장합니다</li>
+            </ul>
+          </div>
+
+          <h2>9. 단축키</h2>
+          <table class="manual-table">
+            <thead>
+              <tr>
+                <th>키</th>
+                <th>기능</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>Enter</code></td>
+                <td>다음 칸으로 이동 (편집 중)</td>
+              </tr>
+              <tr>
+                <td><code>ESC</code></td>
+                <td>슬라이드 전체화면 종료</td>
+              </tr>
+              <tr>
+                <td><code>F5</code></td>
+                <td>페이지 새로고침</td>
+              </tr>
+              <tr>
+                <td><code>F11</code></td>
+                <td>브라우저 전체화면</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>10. 연락처</h2>
+          <div class="manual-section">
+            <p><strong>📧 담당자:</strong> 교감 최광철</p>
+            <p><strong>📞 전화:</strong> (학교 대표 전화)</p>
+            <p><strong>🏫 학교:</strong> 구례중학교</p>
+          </div>
+
+          <h2>11. 버전 정보</h2>
+          <div class="manual-tip">
+            <p><strong>현재 버전:</strong> v3.0.1.9 (2026-01-17)</p>
+            <p><strong>주요 기능:</strong></p>
+            <ul>
+              <li>✅ 유튜브 숏츠 150% 크기</li>
+              <li>✅ 숏츠 소리 재생</li>
+              <li>✅ 슬라이드 전체화면 모드</li>
+              <li>✅ ESC 키로 전체화면 종료</li>
+              <li>✅ 학급 구성 변경 기능</li>
+              <li>✅ 사용설명서 내장</li>
+            </ul>
+          </div>
+
+          <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 2px solid #e5e7eb;">
+            <p class="text-gray-600">© 2026 구례중학교</p>
+            <p class="text-gray-600 text-sm mt-1">제작: 교감 최광철 (AI 협업)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 슬라이드 전체화면 종료 버튼 -->
     <button v-if="slideFullscreen"
             @click="toggleSlideFullscreen"
@@ -413,7 +1009,6 @@
       <div v-if="slides.length" class="slide-container">
         <template v-for="(s, idx) in slides" :key="idx">
           <div v-show="idx === currentSlideIndex" class="absolute inset-0 fade">
-            <!-- 비디오 -->
             <video v-if="s.type === 'video'"
                    :ref="el => { if(el && idx === currentSlideIndex) playVideo(el) }"
                    :class="slideFullscreen ? 'media-contain' : 'media-cover'"
@@ -425,7 +1020,6 @@
                    @loadeddata="onVideoLoaded(s.url)"
                    @error="handleMediaError('video', s.url, $event)"></video>
 
-            <!-- 구글 드라이브 비디오 -->
             <iframe v-else-if="s.type === 'gdrive-video'"
                     class="gdrive-iframe"
                     :src="s.previewUrl"
@@ -433,7 +1027,6 @@
                     allow="autoplay"
                     allowfullscreen></iframe>
 
-            <!-- 유튜브 숏츠 -->
             <div v-else-if="s.type === 'youtube-shorts'" class="youtube-shorts-wrapper">
               <iframe :src="s.embedUrl"
                       :id="'youtube-shorts-' + idx"
@@ -443,7 +1036,6 @@
                       allowfullscreen></iframe>
             </div>
 
-            <!-- 유튜브 일반 -->
             <iframe v-else-if="s.type === 'youtube'"
                     class="youtube-iframe"
                     :src="s.embedUrl"
@@ -453,7 +1045,6 @@
                     referrerpolicy="strict-origin-when-cross-origin"
                     allowfullscreen></iframe>
 
-            <!-- 구글 드라이브 이미지 - 전체화면 시 contain -->
             <img v-else-if="s.type === 'gdrive-image'"
                  :class="slideFullscreen ? 'media-contain' : 'media-cover'"
                  :src="s.thumbnailUrl"
@@ -461,7 +1052,6 @@
                  @load="onImageLoaded(s.url)"
                  @error="handleMediaError('gdrive-image', s.url, $event)" />
 
-            <!-- 일반 이미지 - 전체화면 시 contain -->
             <img v-else
                  :class="slideFullscreen ? 'media-contain' : 'media-cover'"
                  :src="s.url"
@@ -479,7 +1069,6 @@
         </div>
       </div>
 
-      <!-- 슬라이드 관리 영역 - 전체화면 모드에서는 숨김 -->
       <div v-if="isAdminMode && !isKioskMode && !slideFullscreen"
            class="absolute bottom-0 left-0 right-0 bg-black/80 text-white p-3 max-h-64 overflow-auto z-10">
         <div class="flex items-center justify-between mb-2">
@@ -521,6 +1110,13 @@
           </div>
 
           <div class="shrink-0 flex gap-2">
+            <!-- 사용설명서 버튼 -->
+            <button v-if="!isKioskMode" @click="showManual = true"
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-bold">
+              <i class="fa-solid fa-book"></i>
+              사용설명서
+            </button>
+
             <button @click="toggleKiosk"
                     class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded font-bold">
               <i class="fa-solid" :class="isKioskMode ? 'fa-compress' : 'fa-expand'"></i>
@@ -551,9 +1147,8 @@
 
       <section v-if="isAdminMode && !isKioskMode"
                class="shrink-0 border-b bg-gray-50 px-4 py-3">
-        <!-- 크레딧 -->
         <div class="text-xs text-gray-500 mb-2 text-right">
-          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0.1.8"
+          It was produced by Choi Kwang-chul, vice principal, with the help of AI. "Student schedule guide ver3.0.1.9"
         </div>
         
         <div class="flex flex-wrap items-center gap-3">
@@ -766,6 +1361,7 @@
       const isKioskMode = ref(false);
       const showSlides = ref(true);
       const slideFullscreen = ref(false);
+      const showManual = ref(false); // 사용설명서 팝업
 
       const schoolName = ref('구례중학교');
       const classCounts = ref({ 1: 2, 2: 2, 3: 2 });
@@ -846,11 +1442,15 @@
         return user.value.displayName || user.value.email || '사용자';
       });
 
-      // ESC 키로 전체화면 종료
       function handleEscKey(event) {
-        if (event.key === 'Escape' && slideFullscreen.value) {
-          console.log('⌨️  ESC 키로 슬라이드 전체화면 종료');
-          slideFullscreen.value = false;
+        if (event.key === 'Escape') {
+          if (slideFullscreen.value) {
+            console.log('⌨️  ESC 키로 슬라이드 전체화면 종료');
+            slideFullscreen.value = false;
+          } else if (showManual.value) {
+            console.log('⌨️  ESC 키로 사용설명서 닫기');
+            showManual.value = false;
+          }
         }
       }
 
@@ -1558,7 +2158,7 @@
             alert('최소 1개 학년의 행사명을 입력하세요.');
             return;
           }
-        } else if (evt.type === 'class') {
+        } else if (eventForm.value.type === 'class') {
           newEvent.data = {};
           for (const [cls, name] of Object.entries(eventForm.value.classNames)) {
             if (name.trim()) newEvent.data[cls] = name.trim();
@@ -1614,14 +2214,9 @@
       }
 
       onMounted(async () => {
-        console.log('🚀 수업시간표 v3.0.1.8 시작');
-        console.log('🔊 숏츠 소리 켜짐 (mute=0)');
-        console.log('📏 숏츠 크기 150% (키오스크 최적화)');
-        console.log('⏱️  숏츠 지속시간 120초 (2분)');
-        console.log('⌨️  ESC 키로 슬라이드 전체화면 종료 가능');
-        console.log('🎨 슬라이드 전체화면 하단 안내 메시지 제거');
+        console.log('🚀 수업시간표 v3.0.1.9 시작');
+        console.log('📘 사용설명서 내장 완료');
         
-        // ESC 키 이벤트 리스너 등록
         document.addEventListener('keydown', handleEscKey);
         
         onAuthStateChanged(auth, async (u) => {
@@ -1697,7 +2292,8 @@
         formatEventDisplay,
         events,
         kioskSubjectStyle,
-        kioskTeacherStyle
+        kioskTeacherStyle,
+        showManual
       };
     }
   }).mount('#app');
@@ -1705,101 +2301,217 @@
 </body>
 </html>'''
 
-with open('/home/user/수업시간표_v3.0.1.8.html', 'w', encoding='utf-8') as f:
-    f.write(html_v3_1_8)
+with open('/home/user/수업시간표_v3.0.1.9.html', 'w', encoding='utf-8') as f:
+    f.write(html_v3_1_9)
 
 print("="*80)
-print("✅ ESC 안내 메시지 제거 완료!")
+print("✅ 사용설명서 팝업 추가 완료!")
 print("="*80)
 
-print("\n🗑️ 제거된 항목:")
+print("\n🎉 추가된 기능:")
 print("="*80)
 
-print("\n❌ CSS 제거:")
-print("   .esc-hint { ... }  ← 하단 안내 텍스트 스타일")
+print("\n1️⃣  사용설명서 버튼")
+print("   📍 위치: 헤더 우측 (전체화면 버튼 옆)")
+print("   🎨 색상: 보라색 (Purple)")
+print("   💡 동작: 클릭하면 좌측에서 사용설명서 팝업이 나타남")
 
-print("\n❌ HTML 제거:")
-print('   <div v-if="slideFullscreen" class="esc-hint">')
-print('     ⌨️ ESC 키를 누르면 종료됩니다')
-print('   </div>')
+print("\n2️⃣  사용설명서 팝업창")
+print("   📍 위치: 화면 왼쪽")
+print("   📏 크기: 500px (반응형)")
+print("   🎨 스타일:")
+print("      • 헤더: 그라디언트 배경 (보라색)")
+print("      • 본문: 스크롤 가능")
+print("      • 애니메이션: 좌측에서 슬라이드")
+
+print("\n3️⃣  닫기 기능 (3가지)")
+print("   ✅ 우측 상단 X 버튼 클릭")
+print("   ✅ 팝업 외부(오버레이) 클릭")
+print("   ✅ ESC 키 누르기")
 
 print("\n" + "="*80)
-print("✅ 유지된 기능:")
+print("📋 사용설명서 내용 (11개 섹션)")
 print("="*80)
 
-print("\n1️⃣  우측 상단 종료 버튼")
-print("   • 위치: 오른쪽 위")
-print("   • 스타일: 반투명 검정 → 호버 시 빨강")
-print("   • 기능: 정상 작동 ✅")
+print("""
+1. 시작하기
+   • 접속 방법
+   • 로그인
 
-print("\n2️⃣  ESC 키 종료")
-print("   • 키: Escape")
-print("   • 기능: 정상 작동 ✅")
-print("   • 콘솔 메시지: 표시됨")
+2. 기본 사용법
+   • 시간표 보기
+   • 로그아웃
+
+3. 관리자 기능
+   • 관리자 모드 진입
+   • 시간표 편집
+   • 색상 의미
+
+4. 슬라이드 관리
+   • 슬라이드 추가
+   • 권장 크기
+   • 지원 형식
+   • 관리 방법
+
+5. 키오스크 모드
+   • 모드 설명
+   • 사용법
+   • 팁
+
+6. 행사 관리
+   • 행사 등록
+   • 행사 삭제
+   • 표시 예시
+
+7. 문제 해결 (FAQ)
+   • Q1~Q5 (5개 질문)
+
+8. 시스템 설정
+   • 학교 정보 변경
+   • 주의사항
+
+9. 단축키
+   • 키보드 단축키 표
+
+10. 연락처
+    • 담당자 정보
+
+11. 버전 정보
+    • 현재 버전
+    • 주요 기능
+""")
 
 print("\n" + "="*80)
-print("🔍 변경 전후 비교")
+print("🎨 디자인 특징")
 print("="*80)
 
-print("\n【v3.0.1.7 (이전)】")
-print("┌────────────────────────────────────┐")
-print("│  [✖ 전체화면 종료]  ← 우측 상단   │")
-print("│                                    │")
-print("│       슬라이드 영상 재생 중         │")
-print("│                                    │")
-print("│  ⌨️ ESC 키로 종료  ← 하단 안내 ✅  │")
-print("└────────────────────────────────────┘")
+print("\n【사용설명서 헤더】")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("┌────────────────────────────┐")
+print("│ 📘 사용설명서         [X]  │ ← 그라디언트")
+print("│ v3.0.1.9 | 2026-01-17     │")
+print("└────────────────────────────┘")
 
-print("\n【v3.0.1.8 (현재)】")
-print("┌────────────────────────────────────┐")
-print("│  [✖ 전체화면 종료]  ← 우측 상단   │")
-print("│                                    │")
-print("│       슬라이드 영상 재생 중         │")
-print("│                                    │")
-print("│  (하단 안내 메시지 없음) ❌        │")
-print("└────────────────────────────────────┘")
+print("\n【본문 스타일】")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("• 제목 (h2): 보라색 하단 경계선")
+print("• 부제목 (h3, h4): 크기별 구분")
+print("• 팁 박스: 파란색 배경")
+print("• 경고 박스: 노란색 배경")
+print("• 성공 박스: 초록색 배경")
+print("• 코드 블록: 회색 배경")
+print("• 표: 테두리 있는 깔끔한 스타일")
+
+print("\n【애니메이션】")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("열림: 좌측에서 슬라이드 (0.3초)")
+print("배경: 페이드 인 (0.2초)")
 
 print("\n" + "="*80)
-print("📊 버전 히스토리")
+print("🎯 사용 시나리오")
 print("="*80)
 
-print("\nv3.0.1.8 (현재):")
-print("  ✅ 우측 상단 종료 버튼")
-print("  ✅ ESC 키 기능")
-print("  ❌ 하단 안내 메시지 (제거)")
+print("\n【교사/관리자】")
+print("1. 사용설명서 버튼 클릭")
+print("2. 좌측에서 팝업이 나타남")
+print("3. 필요한 내용 찾아보기")
+print("4. X 버튼 또는 ESC로 닫기")
 
-print("\nv3.0.1.7:")
-print("  ✅ 우측 상단 종료 버튼")
-print("  ✅ ESC 키 기능")
-print("  ✅ 하단 안내 메시지")
-
-print("\nv3.0.1.6:")
-print("  ❌ 종료 방법 없음")
+print("\n【신규 사용자】")
+print("1. 처음 로그인 후 사용설명서 버튼 확인")
+print("2. 각 섹션별로 차근차근 읽기")
+print("3. FAQ 섹션에서 궁금한 점 해결")
 
 print("\n" + "="*80)
-print("💡 엣지 브라우저 이슈")
+print("💡 ESC 키 우선순위")
 print("="*80)
 
-print("\n문제:")
-print("  • 엣지에서 5교시 줄에 디버그 메시지가 표시되는 현상")
-print("  • 크롬에서는 정상")
+print("""
+ESC 키를 누르면:
 
-print("\n가능한 원인:")
-print("  • 엣지의 렌더링 엔진 차이")
-print("  • 콘솔 로그가 화면에 출력되는 버그")
-print("  • Vue의 v-if/v-show 처리 차이")
+1순위: 슬라이드 전체화면 → 일반 모드
+2순위: 사용설명서 팝업 → 닫기
 
-print("\n현재 상태:")
-print("  • ESC 안내 메시지는 제거됨")
-print("  • 5교시 디버그 메시지는 별도 이슈")
-print("  • 콘솔 로그를 줄이면 해결될 수 있음")
+즉, 슬라이드 전체화면 중에는 슬라이드가 먼저 종료되고,
+일반 모드에서 사용설명서가 열려있으면 설명서가 닫힙니다.
+""")
+
+print("\n" + "="*80)
+print("📊 화면 구성 비교")
+print("="*80)
+
+print("\n【일반 모드 (사용설명서 닫힘)】")
+print("┌─────────────────────────────────────────┐")
+print("│  2026-01-17 구례중학교 수업시간표        │")
+print("│  [📘사용설명서] [전체화면] [관리자모드]  │")
+print("├──────────┬──────────────────────────────┤")
+print("│          │  시간표 본문                 │")
+print("│ 슬라이드  │                              │")
+print("│  (24%)   │         (76%)                │")
+print("└──────────┴──────────────────────────────┘")
+
+print("\n【사용설명서 열림】")
+print("┌───────────┬─────────────────────────────┐")
+print("│📘사용설명서│  2026-01-17 구례중학교      │")
+print("│   [X]    │  [전체화면] [관리자모드]     │")
+print("│          ├───────┬─────────────────────┤")
+print("│  목차    │       │  시간표 본문        │")
+print("│  1.시작  │ 슬라  │                     │")
+print("│  2.사용  │ 이드  │      (나머지)       │")
+print("│  3.관리  │       │                     │")
+print("│  ...    │       │                     │")
+print("│          │       │                     │")
+print("│(500px)  │(24%) │      (나머지)       │")
+print("└───────────┴───────┴─────────────────────┘")
+
+print("\n" + "="*80)
+print("🔍 버전 변경사항")
+print("="*80)
+
+print("\nv3.0.1.9 (현재):")
+print("  ✅ 사용설명서 버튼 추가")
+print("  ✅ 좌측 사이드바 팝업")
+print("  ✅ 11개 섹션 완전 내장")
+print("  ✅ ESC 키로 닫기")
+print("  ✅ 반응형 디자인")
+
+print("\nv3.0.1.8:")
+print("  ✅ ESC 안내 메시지 제거")
+print("  ✅ 슬라이드 전체화면 종료 기능")
+
+print("\n" + "="*80)
+print("✨ 장점")
+print("="*80)
+
+print("""
+✅ 별도 문서 불필요
+   → PDF나 외부 링크 필요 없음
+
+✅ 언제든지 접근 가능
+   → 버튼 한 번으로 바로 확인
+
+✅ 검색 가능
+   → 브라우저 찾기 기능 (Ctrl+F) 사용 가능
+
+✅ 항상 최신 버전
+   → HTML 파일에 내장되어 있어 버전 관리 쉬움
+
+✅ 오프라인 사용 가능
+   → 인터넷 없어도 설명서 확인 가능
+
+✅ 인쇄 가능
+   → 필요하면 브라우저 인쇄 기능으로 출력
+""")
 
 print("\n" + "="*80)
 print("💾 파일 저장 완료")
 print("="*80)
-print("\n파일명: 수업시간표_v3.0.1.8.html")
-print("\n변경 사항:")
-print("  • 슬라이드 전체화면 하단 안내 메시지 제거")
-print("  • 종료 버튼과 ESC 키 기능은 유지")
-print("\n엣지에서 테스트해보세요!")
-print("\n" + "="*80)
+print("\n파일명: 수업시간표_v3.0.1.9.html")
+print("\n주요 기능:")
+print("  • 📘 사용설명서 버튼 (보라색)")
+print("  • 📖 좌측 사이드바 팝업 (500px)")
+print("  • 🎨 깔끔한 디자인 (11개 섹션)")
+print("  • ⌨️  ESC 키로 닫기")
+print("  • 📱 반응형 (모바일 대응)")
+print("\n테스트해보세요! 🎉")
+print("="*80)

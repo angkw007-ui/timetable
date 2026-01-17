@@ -1,0 +1,1535 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>구례중 수업시간표</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    html, body { height: 100%; }
+    body { margin: 0; overflow: hidden; }
+
+    .slide-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .media-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .youtube-iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .youtube-shorts-wrapper {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      overflow: hidden !important;
+      background: #000;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    .youtube-shorts-wrapper iframe {
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) scale(3.0) !important;
+      transform-origin: center center !important;
+      width: 100% !important;
+      height: 100% !important;
+      min-width: 100% !important;
+      min-height: 100% !important;
+      max-width: none !important;
+      max-height: none !important;
+      border: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .gdrive-iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    th, td { vertical-align: middle; }
+
+    .fade { animation: fadeIn 250ms ease-out; }
+    @keyframes fadeIn { from {opacity:.25} to {opacity:1} }
+
+    .cell-text{
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      line-height: 1.1;
+    }
+
+    .cell-divider{
+      width: 100%;
+      border-top: 1px solid rgba(0,0,0,.14);
+      margin: 6px 0;
+    }
+
+    .cell-editor-wrap{
+      width:100%;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:stretch;
+      padding: 6px;
+      box-sizing: border-box;
+    }
+    .cell-editor-input{
+      width:100%;
+      border:0;
+      outline:none;
+      background:transparent;
+      text-align:center;
+      padding: 2px 4px;
+      line-height: 1.1;
+    }
+    .cell-editor-input:focus{
+      background: rgba(59,130,246,.10);
+      border-radius: 6px;
+    }
+
+    .scroll-area { overflow: auto; }
+
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .login-box {
+      background: white;
+      padding: 3rem;
+      border-radius: 1rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .firebase-warning {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      max-width: 400px;
+      z-index: 10000;
+      animation: shake 0.5s;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900">
+<div id="app" class="w-screen h-screen flex">
+
+  <div v-if="!isFirebaseConfigured" class="firebase-warning">
+    <div class="flex items-start gap-3">
+      <i class="fa-solid fa-triangle-exclamation text-3xl text-amber-600"></i>
+      <div>
+        <h3 class="font-bold text-lg text-gray-900 mb-2">⚠️ Firebase 미설정</h3>
+        <p class="text-sm text-gray-700 mb-3">
+          Firebase 설정이 필요합니다.<br/>
+          HTML 파일을 열어 firebaseConfig를 입력하세요.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="!user" class="login-screen">
+    <div class="login-box">
+      <div class="mb-6">
+        <i class="fa-solid fa-school text-6xl text-indigo-600 mb-4"></i>
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">구례중학교</h1>
+        <h2 class="text-xl font-bold text-gray-700">수업시간표</h2>
+      </div>
+     
+      <p class="text-gray-600 mb-8">
+        수업시간표를 확인하려면<br/>
+        Google 계정으로 로그인해주세요.
+      </p>
+     
+      <button @click="login"
+              class="w-full bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-bold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3 shadow-md hover:shadow-lg">
+        <i class="fa-brands fa-google text-xl"></i>
+        <span class="text-lg">Google 로그인</span>
+      </button>
+     
+      <p class="mt-6 text-sm text-gray-500">
+        학교 구성원만 접근 가능합니다
+      </p>
+    </div>
+  </div>
+
+  <template v-else>
+    <div v-if="showEventModal" class="modal-overlay" @click.self="showEventModal = false">
+      <div class="modal-content">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-2xl font-bold">행사 관리</h2>
+          <button @click="showEventModal = false" class="text-gray-500 hover:text-gray-700">
+            <i class="fa-solid fa-xmark text-2xl"></i>
+          </button>
+        </div>
+
+        <div class="mb-4 p-4 bg-blue-50 rounded-lg">
+          <p class="text-sm text-gray-700 mb-2"><strong>등록된 행사:</strong></p>
+          <div v-if="Object.keys(events).length === 0" class="text-gray-500 text-sm">
+            (등록된 행사 없음)
+          </div>
+          <div v-else class="space-y-1 text-sm">
+            <div v-for="(evt, period) in events" :key="period" class="flex items-center justify-between">
+              <span>{{ period }}교시: {{ formatEventDisplay(evt) }}</span>
+              <button @click="deleteEvent(period)" class="text-red-600 hover:text-red-800 text-xs">
+                <i class="fa-solid fa-trash"></i> 삭제
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block font-bold mb-2">교시 선택</label>
+            <select v-model="eventForm.period" class="w-full border rounded px-3 py-2">
+              <option value="">선택하세요</option>
+              <option v-for="p in [1,2,3,4,5,6,7]" :key="p" :value="p">{{ p }}교시</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold mb-2">행사 범위</label>
+            <select v-model="eventForm.type" class="w-full border rounded px-3 py-2">
+              <option value="all">전체 (모든 학급)</option>
+              <option value="grade">학년별</option>
+              <option value="class">학급별</option>
+            </select>
+          </div>
+
+          <div v-if="eventForm.type === 'all'">
+            <label class="block font-bold mb-2">행사명</label>
+            <input v-model="eventForm.allName" type="text"
+                   class="w-full border rounded px-3 py-2"
+                   placeholder="예: 입학식, 졸업식" />
+          </div>
+
+          <div v-if="eventForm.type === 'grade'" class="space-y-2">
+            <label class="block font-bold mb-2">학년별 행사명</label>
+            <div v-for="g in [1,2,3]" :key="g" class="flex items-center gap-2">
+              <span class="w-20 font-semibold">{{ g }}학년:</span>
+              <input v-model="eventForm.gradeNames[g]" type="text"
+                     class="flex-1 border rounded px-3 py-2"
+                     :placeholder="'예: 체험학습 (빈칸=일반수업)'" />
+            </div>
+          </div>
+
+          <div v-if="eventForm.type === 'class'" class="space-y-2">
+            <label class="block font-bold mb-2">학급별 행사명</label>
+            <div v-for="cls in classes" :key="cls" class="flex items-center gap-2">
+              <span class="w-24 font-semibold">{{ cls }}:</span>
+              <input v-model="eventForm.classNames[cls]" type="text"
+                     class="flex-1 border rounded px-3 py-2"
+                     :placeholder="'예: 현장학습 (빈칸=일반수업)'" />
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button @click="saveEvent"
+                    class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded">
+              <i class="fa-solid fa-check"></i> 저장
+            </button>
+            <button @click="showEventModal = false"
+                    class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 rounded">
+              취소
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside v-if="showSlides" class="h-full bg-black relative overflow-hidden" :style="{ width: slideWidth }">
+      <div v-if="slides.length" class="slide-container">
+        <template v-for="(s, idx) in slides" :key="idx">
+          <div v-show="idx === currentSlideIndex" class="absolute inset-0 fade">
+            <video v-if="s.type === 'video'"
+                   :ref="el => { if(el && idx === currentSlideIndex) playVideo(el) }"
+                   class="media-cover"
+                   :src="s.url"
+                   autoplay
+                   muted
+                   loop
+                   playsinline
+                   @loadeddata="onVideoLoaded(s.url)"
+                   @error="handleMediaError('video', s.url, $event)"></video>
+
+            <iframe v-else-if="s.type === 'gdrive-video'"
+                    class="gdrive-iframe"
+                    :src="s.previewUrl"
+                    title="Google Drive Video"
+                    allow="autoplay"
+                    allowfullscreen></iframe>
+
+            <div v-else-if="s.type === 'youtube-shorts'" class="youtube-shorts-wrapper">
+              <iframe :src="s.embedUrl"
+                      :id="'youtube-shorts-' + idx"
+                      title="YouTube Shorts"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerpolicy="strict-origin-when-cross-origin"
+                      allowfullscreen></iframe>
+            </div>
+
+            <iframe v-else-if="s.type === 'youtube'"
+                    class="youtube-iframe"
+                    :src="s.embedUrl"
+                    :id="'youtube-' + idx"
+                    title="YouTube"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen></iframe>
+
+            <img v-else-if="s.type === 'gdrive-image'"
+                 class="media-cover"
+                 :src="s.thumbnailUrl"
+                 alt="Google Drive Image"
+                 @load="onImageLoaded(s.url)"
+                 @error="handleMediaError('gdrive-image', s.url, $event)" />
+
+            <img v-else
+                 class="media-cover"
+                 :src="s.url"
+                 alt="slide"
+                 @load="onImageLoaded(s.url)"
+                 @error="handleMediaError('image', s.url, $event)" />
+          </div>
+        </template>
+      </div>
+
+      <div v-else class="w-full h-full flex items-center justify-center text-white/60 text-center p-6">
+        <div>
+          <div class="text-2xl font-bold mb-2">슬라이드가 없습니다</div>
+          <div class="text-sm">관리자 모드에서 URL을 추가하세요</div>
+        </div>
+      </div>
+
+      <div v-if="isAdminMode && !isKioskMode"
+           class="absolute bottom-0 left-0 right-0 bg-black/80 text-white p-3 max-h-64 overflow-auto z-10">
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-bold">슬라이드 관리 ({{ slides.length }})</div>
+          <button @click="addSlidePrompt"
+                  class="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-sm">
+            <i class="fa-solid fa-plus"></i> 추가
+          </button>
+        </div>
+
+        <div v-for="(s, idx) in slides" :key="'m'+idx"
+             class="flex items-center gap-2 bg-white/10 rounded px-2 py-1 mb-2">
+          <div class="flex-1 truncate text-xs">
+            <span class="font-bold">{{ s.type }}</span> |
+            <span class="opacity-75">{{ s.displayUrl || s.url.substring(0, 40) }}...</span>
+          </div>
+          <button class="px-2 py-1 hover:bg-white/10 rounded" @click="moveSlide(idx, -1)" title="위로">
+            <i class="fa-solid fa-arrow-up"></i>
+          </button>
+          <button class="px-2 py-1 hover:bg-white/10 rounded" @click="moveSlide(idx, 1)" title="아래로">
+            <i class="fa-solid fa-arrow-down"></i>
+          </button>
+          <button class="px-2 py-1 hover:bg-red-500/20 rounded text-red-200" @click="deleteSlide(idx)" title="삭제">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="h-full flex-1 flex flex-col bg-white">
+
+      <header class="shrink-0 border-b bg-white px-4 py-3">
+        <div class="flex items-center justify-between">
+          <div class="flex-1 text-center select-none">
+            <div class="font-extrabold tracking-tight" :class="isKioskMode ? 'text-4xl' : 'text-2xl'">
+              {{ todayDateStr }} ({{ todayDayLabel }}) 구례중 수업시간표
+            </div>
+          </div>
+
+          <div class="shrink-0 flex gap-2">
+            <button @click="toggleKiosk"
+                    class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded font-bold">
+              <i class="fa-solid" :class="isKioskMode ? 'fa-compress' : 'fa-expand'"></i>
+              전체화면
+            </button>
+
+            <template v-if="!isKioskMode">
+              <button @click="toggleAdmin"
+                      class="px-4 py-2 rounded font-bold"
+                      :class="isAdminMode ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-900'">
+                {{ isAdminMode ? '관리자 종료' : '관리자 모드' }}
+              </button>
+             
+              <div class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded">
+                <img v-if="user.photoURL" :src="user.photoURL" class="w-8 h-8 rounded-full" />
+                <i v-else class="fa-solid fa-user-circle text-2xl text-gray-600"></i>
+                <span class="text-sm font-semibold text-gray-700">{{ userName }}</span>
+              </div>
+             
+              <button @click="logout"
+                      class="px-4 py-2 rounded font-bold bg-gray-200 hover:bg-gray-300">
+                로그아웃
+              </button>
+            </template>
+          </div>
+        </div>
+      </header>
+
+      <section v-if="isAdminMode && !isKioskMode"
+               class="shrink-0 border-b bg-gray-50 px-4 py-3 flex flex-wrap items-center gap-3">
+        <div class="font-bold text-gray-700 mr-2">
+          <i class="fa-solid fa-gear"></i> 관리자 도구
+        </div>
+
+        <label class="text-sm text-gray-700 font-bold flex items-center gap-2">
+          편집 요일:
+          <select v-model="selectedDay" @change="loadDayData" class="border-2 border-blue-500 rounded px-3 py-2 bg-white font-bold text-base">
+            <option v-for="d in weekdays" :key="d" :value="d">{{ d}}요일</option>
+          </select>
+        </label>
+
+        <button @click="loadBaseToGrid"
+                class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded font-bold">
+          <i class="fa-solid fa-rotate-left"></i> 기본시간표 불러오기
+        </button>
+
+        <button @click="saveOverride"
+                class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded font-bold">
+          <i class="fa-solid fa-save"></i> 수업변경 저장
+        </button>
+
+        <button @click="openEventModal"
+                class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-bold">
+          <i class="fa-solid fa-calendar-days"></i> 행사 관리
+        </button>
+
+        <button @click="saveBase"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded font-bold">
+          <i class="fa-solid fa-floppy-disk"></i> 학기초 기본시간표 저장
+        </button>
+
+        <button @click="toggleSlides"
+                class="px-4 py-2 rounded font-bold"
+                :class="showSlides ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-900'">
+          <i class="fa-solid" :class="showSlides ? 'fa-eye' : 'fa-eye-slash'"></i>
+          슬라이드 {{ showSlides ? '켜짐' : '꺼짐' }}
+        </button>
+
+        <div class="ml-auto text-xs text-gray-500">
+          현재: {{ selectedDay }}요일 편집중
+        </div>
+      </section>
+
+      <section class="flex-1"
+               :class="(isAdminMode && !isKioskMode) ? 'scroll-area p-4' : (isKioskMode ? 'overflow-hidden p-2' : 'overflow-hidden p-4')">
+
+        <div class="w-full border-2 border-gray-300 rounded-lg overflow-hidden bg-white"
+             :class="(isAdminMode && !isKioskMode) ? '' : 'h-full'">
+
+          <table class="w-full table-fixed border-collapse" :class="(isAdminMode && !isKioskMode) ? '' : 'h-full'">
+            <thead>
+            <tr>
+              <th class="border border-gray-300 w-28 bg-green-100"
+                  :class="isKioskMode ? 'text-2xl py-4' : 'text-lg py-3'">
+                교시
+              </th>
+
+              <th v-for="cls in classes" :key="cls"
+                  class="border border-gray-300 font-extrabold"
+                  :class="[isKioskMode ? 'text-2xl py-4' : 'text-lg py-3', colHeaderBg(cls)]">
+                {{ classLabel(cls) }}
+              </th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <template v-for="row in tableRows" :key="row.key">
+
+              <tr v-if="row.type==='lunch'" class="bg-amber-50" :style="rowStyle(row)">
+                <td class="border border-gray-300 bg-green-100">
+                  <div class="w-full h-full flex items-center justify-center font-extrabold"
+                       :class="isKioskMode ? 'text-2xl' : 'text-lg'">점심</div>
+                </td>
+                <td :colspan="classes.length" class="border border-gray-300">
+                  <div class="w-full h-full flex items-center justify-center font-extrabold text-gray-800"
+                       :class="isKioskMode ? 'text-3xl' : 'text-xl'">점심시간</div>
+                </td>
+              </tr>
+
+              <tr v-else :style="rowStyle(row)">
+                <td class="border border-gray-300 bg-green-100">
+                  <div class="w-full h-full flex items-center justify-center"
+                       :class="isKioskMode ? 'text-4xl font-extrabold' : 'text-xl font-bold'">
+                    {{ row.period }}교시
+                  </div>
+                </td>
+
+                <td v-if="isFixedThursdayCreative(row.period)"
+                    :colspan="classes.length"
+                    class="border border-gray-300 bg-gray-50">
+                  <div class="w-full h-full flex items-center justify-center text-center font-extrabold text-gray-800 cell-text"
+                       :class="isKioskMode ? 'text-4xl' : 'text-2xl'">
+                    창의적체험활동
+                  </div>
+                </td>
+
+                <template v-else>
+                  <template v-for="(group, gIdx) in getEventGroups(row.period)" :key="'g'+gIdx">
+                    <td v-if="group.isEvent"
+                        :colspan="group.classes.length"
+                        :class="['border border-gray-300', getEventCellBgClass(row.period, group)]">
+                      <div class="w-full h-full flex items-center justify-center text-center font-extrabold text-purple-900 cell-text"
+                           :class="isKioskMode ? 'text-3xl' : 'text-xl'">
+                        {{ group.eventName }}
+                      </div>
+                    </td>
+
+                    <td v-else v-for="cls in group.classes" :key="cls"
+                        class="border border-gray-300 p-0"
+                        :class="[colBodyBg(cls), getCellBgClass(row.period, cls)]">
+
+                      <div v-if="isAdminMode && !isKioskMode" class="cell-editor-wrap">
+                        <input class="cell-editor-input font-extrabold text-lg text-blue-900"
+                               :data-period="row.period"
+                               :data-class="cls"
+                               data-part="subject"
+                               :value="getSubject(grid[row.period][cls])"
+                               @input="(e)=>setCellSubject(row.period, cls, e.target.value)"
+                               @keydown.enter.prevent="handleEnter(row.period, cls, 'subject')"
+                               placeholder="과목명" />
+
+                        <div class="cell-divider"></div>
+
+                        <input class="cell-editor-input font-semibold text-sm text-gray-700"
+                               :data-period="row.period"
+                               :data-class="cls"
+                               data-part="teacher"
+                               :value="getTeacher(grid[row.period][cls])"
+                               @input="(e)=>setCellTeacher(row.period, cls, e.target.value)"
+                               @keydown.enter.prevent="handleEnter(row.period, cls, 'teacher')"
+                               placeholder="교사명" />
+                      </div>
+
+                      <div v-else class="w-full h-full flex items-center justify-center text-center px-2">
+                        <div class="flex flex-col items-center justify-center w-full">
+                          <div class="cell-text font-extrabold text-blue-900"
+                               :style="kioskSubjectStyle(getSubject(grid[row.period][cls]))">
+                            {{ getSubject(grid[row.period][cls]) }}
+                          </div>
+
+                          <div class="cell-divider" style="margin:8px 0 6px 0;"></div>
+
+                          <div class="cell-text font-semibold text-gray-700"
+                               :style="kioskTeacherStyle(getTeacher(grid[row.period][cls]))">
+                            {{ getTeacher(grid[row.period][cls]) }}
+                          </div>
+                        </div>
+                      </div>
+
+                    </td>
+                  </template>
+                </template>
+              </tr>
+            </template>
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+
+    </main>
+  </template>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAiij8Jnb3AmPNAkzsPQUfLQnvmyx9UP6c",
+    authDomain: "classes-51b3d.firebaseapp.com",
+    projectId: "classes-51b3d",
+    storageBucket: "classes-51b3d.firebasestorage.app",
+    messagingSenderId: "850176624202",
+    appId: "1:850176624202:web:6c4efb6de34c94b26d88b3"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fbApp);
+  const auth = getAuth(fbApp);
+  const provider = new GoogleAuthProvider();
+
+  const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
+
+  createApp({
+    setup() {
+      const classes = ['1-1','1-2','2-1','2-2','3-1','3-2'];
+      const weekdays = ['월','화','수','목','금'];
+
+      const configRef = doc(db, "school", "config");
+
+      const user = ref(null);
+      const isAdminMode = ref(false);
+      const isKioskMode = ref(false);
+      const showSlides = ref(true);
+
+      const isFirebaseConfigured = computed(() => {
+        return firebaseConfig.apiKey && 
+               firebaseConfig.projectId && 
+               !firebaseConfig.apiKey.includes('YOUR_') &&
+               !firebaseConfig.projectId.includes('YOUR_');
+      });
+
+      const today = new Date();
+      
+      const todayDateStr = computed(() => {
+        const y = today.getFullYear();
+        const m = String(today.getMonth() + 1).padStart(2, '0');
+        const d = String(today.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      });
+     
+      const todayDayLabel = computed(() => {
+        const dayNames = ['일','월','화','수','목','금','토'];
+        return dayNames[today.getDay()];
+      });
+
+      const selectedDay = ref(weekdays.includes(todayDayLabel.value) ? todayDayLabel.value : '월');
+
+      const slides = ref([]);
+      const currentSlideIndex = ref(0);
+      const slideWidth = computed(() => (isKioskMode.value ? '20%' : '24%'));
+      
+      const slideTimer = ref(null);
+
+      const base = ref(makeEmptyTimetable());
+      const baseEvents = ref({});
+      const overrides = ref({});
+      const events = ref({});
+      const grid = ref(makeEmptyTimetable());
+
+      const showEventModal = ref(false);
+      const eventForm = ref({
+        period: '',
+        type: 'all',
+        allName: '',
+        gradeNames: { 1: '', 2: '', 3: '' },
+        classNames: { '1-1': '', '1-2': '', '2-1': '', '2-2': '', '3-1': '', '3-2': '' }
+      });
+
+      const userName = computed(() => {
+        if (!user.value) return '';
+        return user.value.displayName || user.value.email || '사용자';
+      });
+
+      function toggleSlides() {
+        showSlides.value = !showSlides.value;
+        console.log('🎬 슬라이드:', showSlides.value ? '켜짐' : '꺼짐');
+      }
+
+      watch(showSlides, (newValue) => {
+        if (newValue) {
+          startSlideTimer();
+        } else {
+          if (slideTimer.value) {
+            clearTimeout(slideTimer.value);
+            slideTimer.value = null;
+          }
+        }
+      });
+
+      function onVideoLoaded(url) {
+        console.log('✅ 비디오 로드:', url.substring(0, 50));
+      }
+
+      function onImageLoaded(url) {
+        console.log('✅ 이미지 로드:', url.substring(0, 50));
+      }
+
+      function handleMediaError(type, url, event) {
+        console.error(`❌ ${type} 로드 실패:`, url);
+      }
+
+      function playVideo(videoEl) {
+        if (!videoEl) return;
+        videoEl.play().catch(e => {
+          console.warn('비디오 자동재생 실패:', e);
+        });
+      }
+
+      function makeEmptyTimetable() {
+        const t = {};
+        for (let p = 1; p <= 7; p++) {
+          t[p] = {};
+          for (const c of classes) t[p][c] = '';
+        }
+        return t;
+      }
+
+      function classLabel(cls) {
+        const [g, b] = String(cls).split('-');
+        return `${g}학년 ${b}반`;
+      }
+
+      function gradeFromClass(cls) {
+        return Number(String(cls).split('-')[0]);
+      }
+
+      function colHeaderBg(cls) {
+        const g = gradeFromClass(cls);
+        if (g === 1) return 'bg-yellow-100';
+        if (g === 2) return 'bg-sky-100';
+        return 'bg-pink-100';
+      }
+     
+      function colBodyBg(cls) {
+        const g = gradeFromClass(cls);
+        if (g === 1) return 'bg-yellow-50';
+        if (g === 2) return 'bg-sky-50';
+        return 'bg-pink-50';
+      }
+
+      function getCellBgClass(period, cls) {
+        if (isOverrideCell(period, cls)) {
+          return 'bg-red-100 ring-2 ring-red-300';
+        }
+        return '';
+      }
+
+      function getEventCellBgClass(period, group) {
+        const baseEvt = baseEvents.value[String(period)];
+        const currEvt = events.value[String(period)];
+       
+        if (JSON.stringify(baseEvt) !== JSON.stringify(currEvt)) {
+          return 'bg-red-100 ring-2 ring-red-300';
+        }
+        return 'bg-purple-50';
+      }
+
+      function dayIndexFromKorean(day) {
+        const map = { '일':0,'월':1,'화':2,'수':3,'목':4,'금':5,'토':6 };
+        return map[day] ?? today.getDay();
+      }
+     
+      function isFixedThursdayCreative(p) {
+        const dIdx = dayIndexFromKorean(selectedDay.value);
+        return (p === 7 && dIdx === 4);
+      }
+
+      function getEventGroups(period) {
+        const evt = events.value[String(period)];
+        if (!evt) {
+          return [{ isEvent: false, classes: classes }];
+        }
+
+        const groups = [];
+
+        if (evt.type === 'all') {
+          groups.push({
+            isEvent: true,
+            eventName: evt.name,
+            classes: classes
+          });
+        } else if (evt.type === 'grade') {
+          for (let g = 1; g <= 3; g++) {
+            const gradeName = evt.data[g];
+            const gradeClasses = classes.filter(c => gradeFromClass(c) === g);
+           
+            if (gradeName) {
+              groups.push({
+                isEvent: true,
+                eventName: gradeName,
+                classes: gradeClasses
+              });
+            } else {
+              groups.push({
+                isEvent: false,
+                classes: gradeClasses
+              });
+            }
+          }
+        } else if (evt.type === 'class') {
+          const eventClasses = [];
+          const normalClasses = [];
+         
+          for (const cls of classes) {
+            if (evt.data[cls]) {
+              eventClasses.push({ cls, name: evt.data[cls] });
+            } else {
+              normalClasses.push(cls);
+            }
+          }
+         
+          const eventMap = {};
+          for (const { cls, name } of eventClasses) {
+            if (!eventMap[name]) eventMap[name] = [];
+            eventMap[name].push(cls);
+          }
+         
+          for (const [name, clsList] of Object.entries(eventMap)) {
+            groups.push({
+              isEvent: true,
+              eventName: name,
+              classes: clsList
+            });
+          }
+         
+          if (normalClasses.length > 0) {
+            groups.push({
+              isEvent: false,
+              classes: normalClasses
+            });
+          }
+        }
+
+        return groups.length > 0 ? groups : [{ isEvent: false, classes: classes }];
+      }
+
+      function formatEventDisplay(evt) {
+        if (evt.type === 'all') {
+          return `전체 - ${evt.name}`;
+        } else if (evt.type === 'grade') {
+          const parts = [];
+          for (const [g, name] of Object.entries(evt.data)) {
+            if (name) parts.push(`${g}학년(${name})`);
+          }
+          return parts.join(', ') || '(없음)';
+        } else if (evt.type === 'class') {
+          const parts = [];
+          for (const [cls, name] of Object.entries(evt.data)) {
+            if (name) parts.push(`${cls}(${name})`);
+          }
+          return parts.join(', ') || '(없음)';
+        }
+        return '';
+      }
+
+      const periodCount = computed(() => 7);
+      const lunchHeightPct = computed(() => (isKioskMode.value ? 5 : 6));
+      const periodHeightPct = computed(() => (100 - lunchHeightPct.value) / periodCount.value);
+
+      const tableRows = computed(() => {
+        const rows = [];
+        for (let p = 1; p <= 7; p++) {
+          rows.push({ type: 'period', period: p, key: 'p'+p });
+          if (p === 4) rows.push({ type: 'lunch', key: 'lunch' });
+        }
+        return rows;
+      });
+
+      function rowStyle(row) {
+        if (row.type === 'lunch') return { height: lunchHeightPct.value + '%' };
+        return { height: periodHeightPct.value + '%' };
+      }
+
+      function parseCell(v) {
+        const s = String(v || '');
+        if (!s.trim()) return { subject:'', teacher:'' };
+        if (s.includes('\n')) {
+          const parts = s.split('\n');
+          return { subject: (parts[0]||'').trim(), teacher: parts.slice(1).join(' ').trim() };
+        }
+        return { subject: s.trim(), teacher:'' };
+      }
+     
+      function getSubject(v){ return parseCell(v).subject; }
+      function getTeacher(v){ return parseCell(v).teacher; }
+
+      function setCell(p, cls, subject, teacher) {
+        const s = String(subject||'').trim();
+        const t = String(teacher||'').trim();
+        if (!grid.value[p]) grid.value[p] = {};
+        grid.value[p][cls] = t ? `${s}\n${t}` : `${s}`;
+      }
+     
+      function setCellSubject(p, cls, subject) {
+        const cur = parseCell(grid.value[p]?.[cls] || '');
+        setCell(p, cls, subject, cur.teacher);
+      }
+     
+      function setCellTeacher(p, cls, teacher) {
+        const cur = parseCell(grid.value[p]?.[cls] || '');
+        setCell(p, cls, cur.subject, teacher);
+      }
+
+      function keyOf(p, cls) { return `${p}|${cls}`; }
+     
+      function normalizeCell(v) {
+        return String(v||'').trim().replace(/\r\n/g, '\n');
+      }
+
+      function mergeBaseAndOverrides(baseTT, ov) {
+        const merged = {};
+        for (let p = 1; p <= 7; p++) {
+          merged[p] = {};
+          for (const c of classes) {
+            const k = keyOf(p, c);
+            merged[p][c] = ov[k] !== undefined ? ov[k] : (baseTT[p]?.[c] || '');
+          }
+        }
+        return merged;
+      }
+
+      function isOverrideCell(p, cls) {
+        return overrides.value[keyOf(p, cls)] !== undefined;
+      }
+
+      function kioskSubjectStyle(subject) {
+        const t = String(subject || '').trim();
+        if (!isKioskMode.value) return { fontSize: '1.15rem', lineHeight: '1.12' };
+        const len = Array.from(t).length;
+        let maxPx = 46;
+        if (len > 10) maxPx = 40;
+        if (len > 16) maxPx = 34;
+        if (len > 24) maxPx = 28;
+        if (len > 34) maxPx = 24;
+        return { fontSize: `clamp(18px, 2.2vw, ${maxPx}px)`, lineHeight: '1.05' };
+      }
+     
+      function kioskTeacherStyle(teacher) {
+        const t = String(teacher || '').trim();
+        if (!isKioskMode.value) return { fontSize: '0.95rem', lineHeight: '1.15' };
+        const len = Array.from(t).length;
+        let maxPx = 26;
+        if (len > 10) maxPx = 23;
+        if (len > 16) maxPx = 20;
+        if (len > 24) maxPx = 18;
+        if (len > 34) maxPx = 16;
+        return { fontSize: `clamp(14px, 1.35vw, ${maxPx}px)`, lineHeight: '1.1' };
+      }
+
+      function focusField(period, cls, part) {
+        const el = document.querySelector(
+          `[data-period="${period}"][data-class="${cls}"][data-part="${part}"]`
+        );
+        if (el) { el.focus(); el.select?.(); }
+      }
+     
+      async function handleEnter(period, cls, part) {
+        if (part === 'subject') {
+          await nextTick();
+          focusField(period, cls, 'teacher');
+          return;
+        }
+        const vPeriods = [1,2,3,4,5,6,7];
+        const p = Number(period);
+        const pIdx = vPeriods.indexOf(p);
+        const cIdx = classes.indexOf(cls);
+        if (pIdx === -1 || cIdx === -1) return;
+
+        const nextPeriod = vPeriods[pIdx + 1];
+        if (nextPeriod != null) {
+          await nextTick();
+          focusField(nextPeriod, cls, 'subject');
+          return;
+        }
+        const nextClass = classes[cIdx + 1] || classes[0];
+        const firstPeriod = vPeriods[0];
+        await nextTick();
+        focusField(firstPeriod, nextClass, 'subject');
+      }
+
+      function convertGoogleDriveUrl(url) {
+        try {
+          let fileId = '';
+          
+          if (url.includes('drive.google.com/file/d/')) {
+            const parts = url.split('drive.google.com/file/d/')[1];
+            if (parts) {
+              fileId = parts.split('/')[0].split('?')[0];
+            }
+          }
+          else if (url.includes('drive.google.com/open?id=')) {
+            const parts = url.split('id=')[1];
+            if (parts) {
+              fileId = parts.split('&')[0];
+            }
+          }
+          
+          if (fileId) {
+            console.log('📁 구글 드라이브 파일 인식:', fileId);
+            return {
+              isGoogleDrive: true,
+              fileId: fileId,
+              thumbnailUrl: `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`,
+              previewUrl: `https://drive.google.com/file/d/${fileId}/preview`,
+              displayUrl: `구글드라이브: ${fileId.substring(0, 12)}...`,
+              originalUrl: url
+            };
+          }
+        } catch (e) {
+          console.error('❌ 구글 드라이브 URL 파싱 오류:', e);
+        }
+        return null;
+      }
+
+      function toYoutubeEmbed(url) {
+        try {
+          const u = new URL(url);
+          let id = '';
+          let isShorts = false;
+          
+          if (u.pathname.includes('/shorts/')) {
+            const parts = u.pathname.split('/shorts/')[1];
+            if (parts) {
+              id = parts.split('?')[0].split('/')[0];
+              isShorts = true;
+              console.log('📱 유튜브 숏츠 인식:', id);
+            }
+          }
+          else if (u.hostname.includes('youtu.be')) {
+            id = u.pathname.replace('/', '').split('?')[0];
+          }
+          else if (u.hostname.includes('youtube.com')) {
+            id = u.searchParams.get('v') || '';
+          }
+          
+          if (!id) return null;
+          
+          if (isShorts) {
+            return {
+              embedUrl: `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&controls=0&modestbranding=1&rel=0&fs=0&iv_load_policy=3&disablekb=1`,
+              isShorts: true
+            };
+          } else {
+            return {
+              embedUrl: `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1`,
+              isShorts: false
+            };
+          }
+        } catch (e) {
+          console.error('❌ URL 파싱 오류:', e);
+          return null;
+        }
+      }
+
+      async function setSlidesOnly() {
+        try {
+          await setDoc(configRef, { slides: slides.value }, { merge: true });
+          console.log('✅ 슬라이드 저장 완료');
+        } catch (error) {
+          console.error('❌ 슬라이드 저장 실패:', error);
+          alert('슬라이드 저장 실패: ' + error.message);
+        }
+      }
+     
+      function addSlidePrompt() {
+        const url = prompt(
+          "🎬 미디어 URL 입력:\n\n" +
+          "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
+          "📐 키오스크 모드 슬라이드 영역 크기:\n" +
+          "   • 화면 폭의 20% (1920x1080 화면 기준: 384 x 1080)\n" +
+          "   • 종횡비: 약 9:25 (세로로 긴 비율)\n" +
+          "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
+          "📸 이미지 권장 크기:\n" +
+          "   ✅ 최적: 720 x 1280 (9:16 세로형, HD)\n" +
+          "   ✅ 고화질: 1080 x 1920 (9:16 세로형, Full HD)\n" +
+          "   ⚠️  가로형(16:9)은 상하가 잘려 보입니다!\n\n" +
+          "🎥 동영상 권장 크기:\n" +
+          "   ✅ 720 x 1280 (HD)\n" +
+          "   ✅ 1080 x 1920 (Full HD)\n" +
+          "   💡 유튜브 숏츠(9:16)가 가장 적합합니다!\n" +
+          "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n" +
+          "지원 형식:\n" +
+          "   • 유튜브: youtube.com/watch?v=xxxxx\n" +
+          "   • 숏츠: youtube.com/shorts/xxxxx\n" +
+          "   • 구글 드라이브: drive.google.com/file/d/xxxxx\n" +
+          "   • 직접 링크: example.com/video.mp4 또는 image.jpg\n\n" +
+          "URL을 입력하세요:"
+        );
+        if (!url) return;
+
+        let slide = { url, type: 'img' };
+        
+        const gDrive = convertGoogleDriveUrl(url);
+        if (gDrive) {
+          slide = {
+            url: gDrive.originalUrl,
+            fileId: gDrive.fileId,
+            thumbnailUrl: gDrive.thumbnailUrl,
+            previewUrl: gDrive.previewUrl,
+            displayUrl: gDrive.displayUrl,
+            type: 'gdrive-image'
+          };
+          
+          const mediaType = prompt(
+            "📁 구글 드라이브 파일 타입:\n\n1 = 이미지\n2 = 비디오",
+            "1"
+          );
+          
+          if (mediaType === "2") {
+            slide.type = 'gdrive-video';
+            console.log('🎥 구글 드라이브 비디오');
+          } else {
+            console.log('🖼️ 구글 드라이브 이미지');
+          }
+        }
+        else {
+          const ytResult = toYoutubeEmbed(url);
+          if (ytResult) { 
+            slide.type = ytResult.isShorts ? 'youtube-shorts' : 'youtube';
+            slide.embedUrl = ytResult.embedUrl;
+            console.log(ytResult.isShorts ? '📱 유튜브 숏츠 (9:16 세로형 - 최적!)' : '📺 유튜브 일반');
+          }
+          else {
+            const lowerUrl = url.toLowerCase();
+            if (lowerUrl.includes('.mp4') || lowerUrl.includes('.webm') || 
+                lowerUrl.includes('.ogg') || lowerUrl.includes('.mov') || 
+                lowerUrl.includes('.avi')) {
+              slide.type = 'video';
+              console.log('📹 비디오 (권장: 720x1280 또는 1080x1920)');
+            }
+            else {
+              console.log('🖼️ 이미지 (권장: 720x1280 또는 1080x1920)');
+            }
+          }
+        }
+
+        slides.value = [...slides.value, slide];
+        setSlidesOnly();
+        console.log('✅ 슬라이드 추가:', slide.type);
+      }
+     
+      function deleteSlide(idx) {
+        if (!confirm("이 슬라이드를 삭제할까요?")) return;
+        const ns = slides.value.filter((_, i) => i !== idx);
+        slides.value = ns;
+        if (currentSlideIndex.value >= ns.length) currentSlideIndex.value = 0;
+        setSlidesOnly();
+      }
+     
+      function moveSlide(idx, dir) {
+        const ni = idx + dir;
+        if (ni < 0 || ni >= slides.value.length) return;
+        const ns = [...slides.value];
+        [ns[idx], ns[ni]] = [ns[ni], ns[idx]];
+        slides.value = ns;
+        setSlidesOnly();
+      }
+
+      function getSlideDuration(slide) {
+        if (!slide) return 8000;
+        
+        switch(slide.type) {
+          case 'youtube-shorts':  return 60000;
+          case 'youtube':         return 15000;
+          case 'gdrive-video':
+          case 'video':           return 30000;
+          default:                return 8000;
+        }
+      }
+
+      function startSlideTimer() {
+        if (slideTimer.value) {
+          clearTimeout(slideTimer.value);
+        }
+        
+        if (slides.value.length === 0 || !showSlides.value) return;
+        
+        const currentSlide = slides.value[currentSlideIndex.value];
+        const duration = getSlideDuration(currentSlide);
+        
+        console.log(`⏱️ 슬라이드 ${currentSlideIndex.value + 1}/${slides.value.length} (${currentSlide.type}): ${duration/1000}초`);
+        
+        slideTimer.value = setTimeout(() => {
+          currentSlideIndex.value = (currentSlideIndex.value + 1) % slides.value.length;
+          
+          nextTick(() => {
+            const videos = document.querySelectorAll('video');
+            videos.forEach(v => {
+              if (v.offsetParent !== null) {
+                v.play().catch(e => console.warn('⚠️ 재생 실패:', e));
+              }
+            });
+          });
+          
+          startSlideTimer();
+        }, duration);
+      }
+
+      async function loadDayData() {
+        const day = selectedDay.value;
+        console.log(`\n📅 ${day}요일 데이터 로드`);
+       
+        try {
+          const dayRef = doc(db, "timetables", day);
+          const snap = await getDoc(dayRef);
+         
+          if (!snap.exists()) {
+            console.log(`📝 ${day}요일 빈 시간표`);
+            base.value = makeEmptyTimetable();
+            baseEvents.value = {};
+            overrides.value = {};
+            events.value = {};
+            grid.value = makeEmptyTimetable();
+            return;
+          }
+         
+          const d = snap.data();
+          base.value = d.base || makeEmptyTimetable();
+          baseEvents.value = d.baseEvents || {};
+          overrides.value = d.overrides || {};
+          events.value = d.events || d.baseEvents || {};
+          grid.value = mergeBaseAndOverrides(base.value, overrides.value);
+         
+          console.log(`✅ ${day}요일 로드 완료`);
+        } catch (error) {
+          console.error('❌ 데이터 로드 실패:', error);
+          alert('데이터 로드 실패: ' + error.message);
+        }
+      }
+
+      async function saveBase() {
+        const day = selectedDay.value;
+        if (!confirm(`${day}요일을 '학기초 기본시간표'로 저장할까요?`)) return;
+       
+        try {
+          const dayRef = doc(db, "timetables", day);
+          await setDoc(dayRef, {
+            base: JSON.parse(JSON.stringify(grid.value)),
+            baseEvents: JSON.parse(JSON.stringify(events.value)),
+            overrides: {},
+            events: JSON.parse(JSON.stringify(events.value)),
+            updatedAt: Date.now()
+          });
+         
+          alert(`✅ ${day}요일 기본시간표 저장완료`);
+          await loadDayData();
+        } catch (error) {
+          console.error('❌ 저장 실패:', error);
+          alert('저장 실패: ' + error.message);
+        }
+      }
+
+      async function loadBaseToGrid() {
+        console.log(`🔄 기본시간표 불러오기`);
+       
+        grid.value = JSON.parse(JSON.stringify(base.value));
+        events.value = JSON.parse(JSON.stringify(baseEvents.value));
+        overrides.value = {};
+       
+        alert(`✅ 기본시간표를 불러왔습니다.`);
+      }
+
+      async function saveOverride() {
+        const day = selectedDay.value;
+        const newOverrides = {};
+       
+        for (let p = 1; p <= 7; p++) {
+          for (const cls of classes) {
+            const cur = normalizeCell(grid.value[p]?.[cls] || '');
+            const b = normalizeCell(base.value[p]?.[cls] || '');
+            if (cur !== b) {
+              newOverrides[keyOf(p, cls)] = grid.value[p][cls] || '';
+            }
+          }
+        }
+       
+        try {
+          const dayRef = doc(db, "timetables", day);
+          await setDoc(dayRef, {
+            overrides: newOverrides,
+            events: JSON.parse(JSON.stringify(events.value)),
+            updatedAt: Date.now()
+          }, { merge: true });
+         
+          alert(`✅ 수업변경 저장완료`);
+          await loadDayData();
+        } catch (error) {
+          console.error('❌ 저장 실패:', error);
+          alert('저장 실패: ' + error.message);
+        }
+      }
+
+      function openEventModal() {
+        eventForm.value = {
+          period: '',
+          type: 'all',
+          allName: '',
+          gradeNames: { 1: '', 2: '', 3: '' },
+          classNames: { '1-1': '', '1-2': '', '2-1': '', '2-2': '', '3-1': '', '3-2': '' }
+        };
+        showEventModal.value = true;
+      }
+
+      async function saveEvent() {
+        const p = eventForm.value.period;
+        if (!p) {
+          alert('교시를 선택하세요.');
+          return;
+        }
+
+        const newEvent = { type: eventForm.value.type };
+
+        if (eventForm.value.type === 'all') {
+          if (!eventForm.value.allName.trim()) {
+            alert('행사명을 입력하세요.');
+            return;
+          }
+          newEvent.name = eventForm.value.allName.trim();
+        } else if (eventForm.value.type === 'grade') {
+          newEvent.data = {};
+          for (const [g, name] of Object.entries(eventForm.value.gradeNames)) {
+            if (name.trim()) newEvent.data[g] = name.trim();
+          }
+          if (Object.keys(newEvent.data).length === 0) {
+            alert('최소 1개 학년의 행사명을 입력하세요.');
+            return;
+          }
+        } else if (eventForm.value.type === 'class') {
+          newEvent.data = {};
+          for (const [cls, name] of Object.entries(eventForm.value.classNames)) {
+            if (name.trim()) newEvent.data[cls] = name.trim();
+          }
+          if (Object.keys(newEvent.data).length === 0) {
+            alert('최소 1개 학급의 행사명을 입력하세요.');
+            return;
+          }
+        }
+
+        events.value[p] = newEvent;
+        showEventModal.value = false;
+        alert(`✅ ${p}교시 행사가 등록되었습니다.`);
+      }
+
+      function deleteEvent(period) {
+        if (confirm(`${period}교시 행사를 삭제할까요?`)) {
+          delete events.value[period];
+        }
+      }
+
+      async function login() {
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error("❌ 로그인 오류:", error);
+          alert("로그인 실패: " + error.message);
+        }
+      }
+     
+      async function logout() {
+        if (confirm("로그아웃 하시겠습니까?")) {
+          await signOut(auth);
+          isAdminMode.value = false;
+        }
+      }
+     
+      function toggleAdmin() {
+        isAdminMode.value = !isAdminMode.value;
+      }
+
+      async function toggleKiosk() {
+        isKioskMode.value = !isKioskMode.value;
+        try {
+          if (isKioskMode.value) {
+            if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+          } else {
+            if (document.fullscreenElement) await document.exitFullscreen();
+          }
+        } catch (e) {
+          console.warn("⚠️ 전체화면 실패:", e);
+        }
+      }
+
+      onMounted(async () => {
+        console.log('🚀 앱 시작 - 키오스크 모드 최적 크기 안내 추가');
+        
+        onAuthStateChanged(auth, async (u) => {
+          user.value = u;
+         
+          if (!u) {
+            isAdminMode.value = false;
+            return;
+          }
+
+          console.log('✅ 로그인:', u.email);
+
+          try {
+            const configSnap = await getDoc(configRef);
+            if (configSnap.exists()) {
+              const d = configSnap.data();
+              if (Array.isArray(d.slides)) slides.value = d.slides;
+              console.log('📊 로드된 슬라이드:', slides.value.length);
+            }
+          } catch (error) {
+            console.error('❌ 설정 로드 실패:', error);
+          }
+
+          await loadDayData();
+          startSlideTimer();
+        });
+      });
+
+      return {
+        todayDateStr, todayDayLabel,
+        user, userName, isAdminMode, isKioskMode,
+        isFirebaseConfigured,
+        login, logout, toggleAdmin, toggleKiosk,
+        weekdays,
+        selectedDay,
+        slides, currentSlideIndex, slideWidth,
+        showSlides, toggleSlides,
+        addSlidePrompt, deleteSlide, moveSlide,
+        onVideoLoaded, onImageLoaded,
+        handleMediaError, playVideo,
+        classes, classLabel,
+        colHeaderBg, colBodyBg,
+        tableRows, rowStyle,
+        isFixedThursdayCreative,
+        getEventGroups,
+        grid,
+        getSubject, getTeacher,
+        setCellSubject, setCellTeacher,
+        isOverrideCell,
+        getCellBgClass,
+        getEventCellBgClass,
+        handleEnter,
+        loadDayData,
+        saveBase,
+        loadBaseToGrid,
+        saveOverride,
+        showEventModal,
+        openEventModal,
+        eventForm,
+        saveEvent,
+        deleteEvent,
+        formatEventDisplay,
+        events,
+        kioskSubjectStyle,
+        kioskTeacherStyle
+      };
+    }
+  }).mount('#app');
+</script>
+</body>
+</html>'''
+
+with open('/home/user/구례중_수업시간표_완성.html', 'w', encoding='utf-8') as f:
+    f.write(html_with_size_guide)
+
+print("="*80)
+print("📐 키오스크 모드 최적 이미지/영상 크기 안내 추가!")
+print("="*80)
+
+print("\n🖥️  키오스크 모드 슬라이드 영역:")
+print("="*80)
+print("\n화면 해상도: 1920 x 1080 (Full HD) 기준")
+print("슬라이드 폭: 20% = 384px")
+print("슬라이드 높이: 1080px")
+print("\n종횡비: 약 9:25 (세로로 매우 긴 비율)")
+
+print("\n" + "="*80)
+print("📸 이미지 권장 크기")
+print("="*80)
+print("\n✅ 최적 크기:")
+print("   • 720 x 1280 (9:16 세로형, HD)")
+print("   • 1080 x 1920 (9:16 세로형, Full HD)")
+print("\n⚠️  피해야 할 크기:")
+print("   • 1920 x 1080 (16:9 가로형)")
+print("   → 상하가 잘려서 내용이 보이지 않음!")
+
+print("\n" + "="*80)
+print("🎥 동영상 권장 크기")
+print("="*80)
+print("\n✅ 최적 크기:")
+print("   • 720 x 1280 (9:16 세로형, HD)")
+print("   • 1080 x 1920 (9:16 세로형, Full HD)")
+print("\n💡 추천:")
+print("   • 유튜브 숏츠 (자동으로 9:16 비율)")
+print("   • 인스타그램 릴스 (9:16)")
+print("   • TikTok 동영상 (9:16)")
+
+print("\n" + "="*80)
+print("📱 프롬프트 메시지 개선")
+print("="*80)
+print("\n슬라이드 추가 시 표시되는 안내:")
+print("\n1. 키오스크 모드 영역 크기 설명")
+print("2. 이미지 권장 크기 (720x1280, 1080x1920)")
+print("3. 동영상 권장 크기")
+print("4. 가로형(16:9) 이미지 사용 시 주의사항")
+print("5. 유튜브 숏츠가 가장 적합하다는 팁")
+
+print("\n" + "="*80)
+print("💡 사용 팁")
+print("="*80)
+print("\n1. 이미지 제작 시:")
+print("   - 포토샵/Canva에서 720x1280 또는 1080x1920 캔버스 생성")
+print("   - Instagram Story 템플릿 사용 (9:16 비율)")
+print("\n2. 동영상 촬영 시:")
+print("   - 스마트폰 세로 모드로 촬영")
+print("   - 유튜브 숏츠로 업로드 후 링크 사용")
+print("\n3. 기존 가로형 콘텐츠:")
+print("   - 상하에 여백 추가하여 9:16 비율로 변환")
+print("   - 또는 중요한 부분만 잘라서 사용")
+
+print("\n" + "="*80)
+print("🚀 완성!")
+print("="*80)
+print("\n파일: 구례중_수업시간표_완성.html")
+print("\n슬라이드 추가 시 자세한 크기 안내가 표시됩니다!")
+print("\n" + "="*80)
